@@ -1,0 +1,12 @@
+[submodule "lib/mimalloc"]
+	path = lib/mimalloc
+	url = https://github.com/microsoft/mimalloc.git
+	branch = master
+[submodule "lib/looqueue"]
+	path = lib/looqueue
+	url = https://github.com/oliver-giersch/looqueue
+	branch = slim
+[submodule "lib/rpmalloc"]
+	path = lib/rpmalloc
+	url = https://github.com/mjansson/rpmalloc
+	branch = master
