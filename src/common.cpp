@@ -45,7 +45,7 @@ queue_type_t parse_queue_str(const std::string& queue) {
   }
 
   throw std::invalid_argument(
-      "argument `queue` must be 'lcr', 'loo', 'faa' or 'msc'"
+      "argument `queue` must be 'lcr', 'loo', 'faa', 'faa+' or 'msc'"
   );
 }
 
