@@ -1,7 +1,7 @@
 #ifndef LOO_QUEUE_BENCHMARK_MICHAEL_SCOTT_HPP
 #define LOO_QUEUE_BENCHMARK_MICHAEL_SCOTT_HPP
 
-#include "benches/queues/msc/michael_scott_fwd.hpp"
+#include "michael_scott_fwd.hpp"
 
 namespace msc {
 template <typename T>

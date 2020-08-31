@@ -1,16 +1,18 @@
-#ifndef LOO_QUEUE_BENCHMARK_FAA_ARRAY_HPP
-#define LOO_QUEUE_BENCHMARK_FAA_ARRAY_HPP
+#ifndef LOO_QUEUE_BENCHMARK_FAA_ARRAY_PLUS_HPP
+#define LOO_QUEUE_BENCHMARK_FAA_ARRAY_PLUS_HPP
 
-#include "benches/queues/faa/faa_array_fwd.hpp"
-#include "benches/queues/faa/detail/node.hpp"
+#include "faa_array_fwd.hpp"
+#include "queues/faa+/detail/node.hpp"
 
 #if defined(__GNUG__) || defined(__clang__) || defined(__INTEL_COMPILER)
-#define likely(cond) __builtin_expect ((cond), 1)
+#define   likely(cond) __builtin_expect ((cond), 1)
+#define unlikely(cond) __builtin_expect ((cond), 0)
 #else
-#define likely(cond) cond
+#define   likely(cond) cond
+#define unlikely(cond) cond
 #endif
 
-namespace faa {
+namespace faa_plus {
 template <typename T>
 queue<T>::queue(std::size_t max_threads) : m_hazard_ptrs{ max_threads, 1 } {
   auto sentinel = new node_t();
@@ -36,7 +38,7 @@ void queue<T>::enqueue(queue::pointer elem, std::size_t thread_id) {
 
   while (true) {
     const auto tail = this->m_hazard_ptrs.protect_ptr(this->m_tail.load(), thread_id, HP_ENQ_TAIL);
-    if (tail != this->m_tail.load()) {
+    if (unlikely((tail != this->m_tail.load()))) {
       continue;
     }
 
@@ -75,13 +77,18 @@ void queue<T>::enqueue(queue::pointer elem, std::size_t thread_id) {
 template <typename T>
 typename queue<T>::pointer queue<T>::dequeue(std::size_t thread_id) {
   while (true) {
+    // acquire hazard pointer for head node
     const auto head = this->m_hazard_ptrs.protect_ptr(this->m_head.load(), thread_id, HP_DEQ_HEAD);
     if (head != this->m_head.load()) {
       continue;
     }
 
-    if (head->deq_idx.load() >= head->enq_idx.load() && head->next.load() == nullptr) {
-      break;
+    // perform light-weight empty check
+    if (unlikely((head->deq_idx.fetch_add(0) >= NODE_SIZE))) {
+      const auto next = head->next.load();
+      if (next == nullptr) {
+        break;
+      }
     }
 
     const auto idx = head->deq_idx.fetch_add(1);
@@ -93,6 +100,13 @@ typename queue<T>::pointer queue<T>::dequeue(std::size_t thread_id) {
         return res;
       }
 
+      // perform full empty check if no pointer was written in the reserved slot
+      const auto enq_idx = head->enq_idx.load();
+      if (idx > enq_idx && head->next.load() == nullptr) {
+        break;
+      }
+
+      // abandon the slot and attempt to dequeue from another slot
       continue;
     } else {
       // ** slow path ** advance the head pointer to the next node

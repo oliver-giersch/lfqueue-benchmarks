@@ -8,7 +8,7 @@
 
 #include "looqueue/align.hpp"
 
-#include "benches/hazard_pointers/hazard_pointers.hpp"
+#include "hazard_pointers/hazard_pointers.hpp"
 
 namespace lcr {
 template <typename T>

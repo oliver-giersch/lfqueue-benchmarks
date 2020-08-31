@@ -1,7 +1,7 @@
 #ifndef LOO_QUEUE_BENCHES_HAZARD_POINTERS_HPP
 #define LOO_QUEUE_BENCHES_HAZARD_POINTERS_HPP
 
-#include "benches/hazard_pointers/hazard_pointers_fwd.hpp"
+#include "hazard_pointers_fwd.hpp"
 
 #include <stdexcept>
 
@@ -20,7 +20,7 @@ hazard_pointers<T>::hazard_pointers(
   }
 
   for (auto& thread_block : this->m_thread_blocks) {
-    thread_block.retired_objects.reserve(DEFAULT_RETIRE_CACHE);
+    thread_block.retired_objects.reserve(scan_threshold);
   }
 }
 

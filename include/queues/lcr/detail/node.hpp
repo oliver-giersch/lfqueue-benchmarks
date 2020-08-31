@@ -1,7 +1,7 @@
 #ifndef LOO_QUEUE_BENCHMARK_LCRQ_DETAIL_NODE_HPP
 #define LOO_QUEUE_BENCHMARK_LCRQ_DETAIL_NODE_HPP
 
-#include "benches/queues/lcr/lcrq_fwd.hpp"
+#include "queues/lcr/lcrq_fwd.hpp"
 
 #include <array>
 

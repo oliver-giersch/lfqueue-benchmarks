@@ -10,12 +10,12 @@
 
 #include "boost/thread/barrier.hpp"
 
-#include "benches/common.hpp"
-#include "benches/queues/faa/faa_array.hpp"
-#include "benches/queues/faa+/faa_array.hpp"
-#include "benches/queues/lcr/lcrq.hpp"
-#include "benches/queues/msc/michael_scott.hpp"
-#include "benches/queues/queue_ref.hpp"
+#include "common.hpp"
+#include "queues/faa/faa_array.hpp"
+#include "queues/faa+/faa_array.hpp"
+#include "queues/lcr/lcrq.hpp"
+#include "queues/msc/michael_scott.hpp"
+#include "queues/queue_ref.hpp"
 
 #include "looqueue/queue.hpp"
 

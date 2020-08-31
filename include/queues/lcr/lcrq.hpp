@@ -1,8 +1,8 @@
 #ifndef LOO_QUEUE_BENCHMARK_LCRQ_HPP
 #define LOO_QUEUE_BENCHMARK_LCRQ_HPP
 
-#include "benches/queues/lcr/lcrq_fwd.hpp"
-#include "benches/queues/lcr/detail/node.hpp"
+#include "lcrq_fwd.hpp"
+#include "queues/lcr/detail/node.hpp"
 
 namespace lcr {
 template <typename T>

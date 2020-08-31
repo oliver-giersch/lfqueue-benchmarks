@@ -1,4 +1,4 @@
-#include "benches/common.hpp"
+#include "common.hpp"
 
 #include <chrono>
 #include <iostream>

@@ -1,7 +1,7 @@
 #ifndef LOO_QUEUE_BENCHMARK_FAA_ARRAY_PLUS_NODE_HPP
 #define LOO_QUEUE_BENCHMARK_FAA_ARRAY_PLUS_NODE_HPP
 
-#include "benches/queues/faa+/faa_array_fwd.hpp"
+#include "queues/faa+/faa_array_fwd.hpp"
 
 #include <cstdint>
 #include <atomic>

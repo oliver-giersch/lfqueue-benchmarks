@@ -3,7 +3,7 @@
 
 #include <atomic>
 
-#include "benches/hazard_pointers/hazard_pointers.hpp"
+#include "hazard_pointers/hazard_pointers.hpp"
 #include "looqueue/align.hpp"
 
 namespace msc {

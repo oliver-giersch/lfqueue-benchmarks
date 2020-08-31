@@ -48,7 +48,6 @@ public:
 private:
   static constexpr std::size_t MAX_HAZARD_POINTERS    = 4;
   static constexpr std::size_t DEFAULT_SCAN_THRESHOLD = 1;
-  static constexpr std::size_t DEFAULT_RETIRE_CACHE   = 64;
 
   /** each hazard pointer is exclusively stored on its own cache line */
   struct alignas(CACHE_LINE_SIZE) hazard_ptr {
