@@ -15,15 +15,17 @@ enum class queue_type_t {
   LCR,
   LOO,
   FAA,
+  FAA_PLUS,
   MSC
 };
 
 constexpr const char* display_str(queue_type_t queue) {
   switch (queue) {
-    case queue_type_t::LCR: return "LCR";
-    case queue_type_t::LOO: return "LOO";
-    case queue_type_t::FAA: return "FAA";
-    case queue_type_t::MSC: return "MSC";
+    case queue_type_t::LCR     : return "LCR";
+    case queue_type_t::LOO     : return "LOO";
+    case queue_type_t::FAA     : return "FAA";
+    case queue_type_t::FAA_PLUS: return "FAA+";
+    case queue_type_t::MSC     : return "MSC";
     default: return "unknown";
   }
 }

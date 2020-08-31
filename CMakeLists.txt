@@ -1,5 +1,4 @@
-cmake_minimum_required(VERSION 3.17)
-cmake_policy(SET CMP0077 NEW)
+cmake_minimum_required(VERSION 3.0)
 
 project(looqueue-benchmarks CXX)
 
@@ -10,10 +9,10 @@ option(STATIC "using static linking" OFF)
 # allocator libraries
 if(ALLOCATOR MATCHES "mimalloc")
     # mimalloc build options
-    set(MI_BUILD_SHARED OFF)
-    set(MI_BUILD_OBJECT OFF)
-    set(MI_BUILD_TESTS  OFF)
-    set(MI_USE_CXX      OFF)
+    set(MI_BUILD_SHARED CACHE BOOL OFF)
+    set(MI_BUILD_OBJECT CACHE BOOL OFF)
+    set(MI_BUILD_TESTS  CACHE BOOL OFF)
+    set(MI_USE_CXX      CACHE BOOL OFF)
 
     add_subdirectory(lib/mimalloc)
 elseif(ALLOCATOR MATCHES "rpmalloc")
@@ -32,19 +31,18 @@ if(STATIC)
     set(Boost_USE_STATIC_LIBS ON)
 endif()
 
+# looqueue build options
+set(LOO_USE_SEQ_CST CACHE BOOL ON)
+add_subdirectory(lib/looqueue)
+
 find_package(Threads REQUIRED)
 find_package(Boost 1.68.0 REQUIRED thread)
-
-# looqueue build options (ineffective)
-add_subdirectory(lib/looqueue)
-set(LOO_USE_SEQ_CST ON)
 
 # bench throughput
 add_executable(bench_throughput
         src/bench_throughput.cpp
         src/common.cpp)
 target_include_directories(bench_throughput PRIVATE include)
-target_compile_definitions(bench_throughput PRIVATE LOO_USE_SEQ_CST)
 target_link_libraries(bench_throughput PRIVATE
         ${Boost_LIBRARIES}
         Threads::Threads

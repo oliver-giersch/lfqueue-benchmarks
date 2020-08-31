@@ -36,6 +36,10 @@ queue_type_t parse_queue_str(const std::string& queue) {
     return queue_type_t::FAA;
   }
 
+  if (queue == "faa+") {
+    return queue_type_t::FAA_PLUS;
+  }
+
   if (queue == "msc") {
     return queue_type_t::MSC;
   }
