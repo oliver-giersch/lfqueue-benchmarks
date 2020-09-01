@@ -7,7 +7,7 @@
 #include <pthread.h>
 
 namespace bench {
-namespace detail {
+namespace {
 std::size_t measure_ns_per_iteration() {
   using nanosecs = std::chrono::nanoseconds;
   constexpr auto iters = 1000;
@@ -116,7 +116,7 @@ void pin_current_thread(std::size_t thread_id) {
 }
 
 void spin_for_ns(std::size_t ns) {
-  static const auto NS_PER_ITER = detail::measure_ns_per_iteration();
+  static const auto NS_PER_ITER = measure_ns_per_iteration();
 
   for (volatile auto i = 0; i < ns * NS_PER_ITER; ++i) {}
 }

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
-
 project(looqueue-benchmarks CXX)
+
+set(CMAKE_CXX_STANDARD 20)
 
 set(ALLOCATOR "system" CACHE STRING "Choose global allocator override [system|mimalloc|rpmalloc]")
 option(CASCADE_LAKE "using -march=cascadelake -mtune=cascadelake" OFF)

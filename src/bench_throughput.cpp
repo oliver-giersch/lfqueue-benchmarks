@@ -1,10 +1,14 @@
 #include <array>
+#include <charconv>
 #include <chrono>
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <ranges>
+#include <span>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <thread>
 #include <vector>
 
@@ -19,14 +23,11 @@
 
 #include "looqueue/queue.hpp"
 
-using nanosecs = std::chrono::nanoseconds;
-
-constexpr std::array<std::size_t, 9>  THREADS_MACRO{ 4, 8, 16, 24, 32, 48, 64, 80, 96 };
-constexpr std::array<std::size_t, 11> THREADS_MICRO{ 1, 2, 4, 8, 16, 24, 32, 48, 64, 80, 96 };
+constexpr std::array<std::size_t, 11> THREADS{ 1, 2, 4, 8, 16, 24, 32, 48, 64, 80, 96 };
 
 /********** queue aliases *****************************************************/
 
-using loo_queue     = loo::queue<std::size_t>;
+using loo_queue          = loo::queue<std::size_t>;
 
 using faa_queue          = faa::queue<std::size_t>;
 using faa_queue_ref      = queue_ref<faa_queue>;
@@ -51,7 +52,8 @@ void run_benches(
     bench::bench_type_t     bench_type,
     std::size_t             total_ops,
     std::size_t             runs,
-    make_queue_ref_fn<Q, R> make_queue_ref
+    make_queue_ref_fn<Q, R> make_queue_ref,
+    std::span<const std::size_t>  threads_range
 );
 
 /** runs the pairwise enqueue/dequeue benchmark */
@@ -85,6 +87,26 @@ void bench_reads_or_writes(
     make_queue_ref_fn<Q, R> make_queue_ref
 );
 
+/** potentially extracts the alternative threads span from the argument vector */
+std::span<const std::size_t>
+extract_thread_span(
+    int argc,
+    char* argv[6],
+    std::array<std::size_t, 1>& res
+) {
+  if (argc < 6) {
+    return std::span(THREADS.begin(), THREADS.end());
+  } else {
+    const auto str = std::string_view(argv[5]);
+    const auto err = std::from_chars(str.begin(), str.end(), res[0]);
+    if (err.ec != std::errc()) {
+      throw std::invalid_argument("alternative thread range: expected integer");
+    }
+
+    return std::span(res.begin(), res.end());
+  }
+}
+
 int main(int argc, char* argv[5]) {
   if (argc < 5) {
     throw std::invalid_argument("too few program arguments");
@@ -100,6 +122,9 @@ int main(int argc, char* argv[5]) {
   const auto total_ops = bench::parse_total_ops_str(total_ops_str);
   const auto runs = bench::parse_runs_str(runs_str);
 
+  auto alternative_thread_range = std::to_array({ static_cast<std::size_t>(0) });
+  const auto threads = extract_thread_span(argc, argv, alternative_thread_range);
+
   const std::string queue_name{ bench::display_str(queue_type) };
 
   switch (queue_type) {
@@ -111,7 +136,8 @@ int main(int argc, char* argv[5]) {
           runs,
           [](auto& queue, auto thread_id) -> auto {
             return lcr_queue_ref(queue, thread_id);
-          }
+          },
+          threads
       );
       break;
     case bench::queue_type_t::LOO:
@@ -120,7 +146,8 @@ int main(int argc, char* argv[5]) {
           bench_type,
           total_ops,
           runs,
-          [](auto& queue, auto) -> auto& { return queue; }
+          [](auto& queue, auto) -> auto& { return queue; },
+          threads
       );
       break;
     case bench::queue_type_t::FAA:
@@ -131,7 +158,8 @@ int main(int argc, char* argv[5]) {
           runs,
           [](auto& queue, auto thread_id) -> auto {
             return faa_queue_ref(queue, thread_id);
-          }
+          },
+          threads
       );
       break;
     case bench::queue_type_t::FAA_PLUS:
@@ -142,7 +170,8 @@ int main(int argc, char* argv[5]) {
           runs,
           [](auto& queue, auto thread_id) -> auto {
             return faa_plus_queue_ref(queue, thread_id);
-          }
+          },
+          threads
       );
       break;
     case bench::queue_type_t::MSC:
@@ -153,7 +182,8 @@ int main(int argc, char* argv[5]) {
           runs,
           [](auto& queue, auto thread_id) -> auto {
             return msc_queue_ref(queue, thread_id);
-          }
+          },
+          threads
       );
       break;
   }
@@ -165,10 +195,11 @@ void run_benches(
     bench::bench_type_t     bench_type,
     std::size_t             total_ops,
     std::size_t             runs,
-    make_queue_ref_fn<Q, R> make_queue_ref
+    make_queue_ref_fn<Q, R> make_queue_ref,
+    std::span<const std::size_t>  threads_range
 ) {
   if (bench_type == bench::bench_type_t::PAIRS || bench_type == bench::bench_type_t::BURSTS) {
-    for (auto threads : THREADS_MICRO) {
+    for (auto threads : threads_range) {
       // aborts if hyper-threads would be used (assuming 2 HT per core)
       if (threads > std::thread::hardware_concurrency() / 2) {
         break;
@@ -185,7 +216,7 @@ void run_benches(
       }
     }
   } else {
-    for (auto threads : THREADS_MACRO) {
+    for (auto threads : (threads_range | std::views::filter([](auto n) { return n >= 4; }))) {
       // aborts if hyper-threads would be used (assuming 2 HT per core)
       if (threads > std::thread::hardware_concurrency() / 2) {
         break;
