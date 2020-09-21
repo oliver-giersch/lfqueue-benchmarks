@@ -44,7 +44,7 @@ void queue<T>::enqueue(queue::pointer elem, std::size_t thread_id) {
 
     const auto idx = tail->enq_idx.fetch_add(1);
     if (likely(idx < NODE_SIZE)) {
-      // ** fast path ** write pointer directly into the reserved slot
+      // ** fast path ** write (CAS) pointer directly into the reserved slot
       if (likely(tail->cas_slot_at(idx, nullptr, elem))) {
         break;
       }
