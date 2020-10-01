@@ -1,7 +1,7 @@
 #ifndef LOO_QUEUE_BENCHMARK_FAA_ARRAY_PLUS_HPP
 #define LOO_QUEUE_BENCHMARK_FAA_ARRAY_PLUS_HPP
 
-#include "faa_array_fwd.hpp"
+#include "faa_array_plus_fwd.hpp"
 #include "queues/faa+/detail/node.hpp"
 
 #if defined(__GNUG__) || defined(__clang__) || defined(__INTEL_COMPILER)
@@ -76,6 +76,7 @@ void queue<T>::enqueue(queue::pointer elem, std::size_t thread_id) {
 
 template <typename T>
 typename queue<T>::pointer queue<T>::dequeue(std::size_t thread_id) {
+  pointer res = nullptr;
   while (true) {
     // acquire hazard pointer for head node
     const auto head = this->m_hazard_ptrs.protect_ptr(this->m_head.load(), thread_id, HP_DEQ_HEAD);
@@ -83,28 +84,34 @@ typename queue<T>::pointer queue<T>::dequeue(std::size_t thread_id) {
       continue;
     }
 
+    // prevent incrementing dequeue index in case the queue is empty (original empty check)
+    if (head->deq_idx.load() >= head->enq_idx.load() && head->next.load() == nullptr) {
+      break;
+    }
+
+    /**
     // perform light-weight empty check
     if (unlikely((head->deq_idx.fetch_add(0) >= NODE_SIZE))) {
       const auto next = head->next.load();
       if (next == nullptr) {
         break;
       }
-    }
+    }*/
 
     const auto idx = head->deq_idx.fetch_add(1);
     if (likely(idx < NODE_SIZE)) {
       // ** fast path ** read the pointer from the reserved slot
-      auto res = head->slots[idx].exchange(reinterpret_cast<pointer>(TAKEN));
+      res = head->slots[idx].ptr.exchange(reinterpret_cast<pointer>(TAKEN));
       if (likely(res != nullptr)) {
-        this->m_hazard_ptrs.clear_one(thread_id, HP_DEQ_HEAD);
-        return res;
+        break;
       }
 
+      /* post-fix empty check
       // perform full empty check if no pointer was written in the reserved slot
       const auto enq_idx = head->enq_idx.load();
       if (idx > enq_idx && head->next.load() == nullptr) {
         break;
-      }
+      }*/
 
       // abandon the slot and attempt to dequeue from another slot
       continue;
@@ -124,7 +131,7 @@ typename queue<T>::pointer queue<T>::dequeue(std::size_t thread_id) {
   }
 
   this->m_hazard_ptrs.clear_one(thread_id, HP_DEQ_HEAD);
-  return nullptr;
+  return res;
 }
 
 template <typename T>

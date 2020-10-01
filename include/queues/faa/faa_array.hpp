@@ -74,12 +74,15 @@ void queue<T>::enqueue(queue::pointer elem, std::size_t thread_id) {
 
 template <typename T>
 typename queue<T>::pointer queue<T>::dequeue(std::size_t thread_id) {
+  pointer res = nullptr;
   while (true) {
+    // acquire hazard pointer for head node
     const auto head = this->m_hazard_ptrs.protect_ptr(this->m_head.load(), thread_id, HP_DEQ_HEAD);
     if (head != this->m_head.load()) {
       continue;
     }
 
+    // prevent incrementing dequeue index in case the queue is empty
     if (head->deq_idx.load() >= head->enq_idx.load() && head->next.load() == nullptr) {
       break;
     }
@@ -87,12 +90,12 @@ typename queue<T>::pointer queue<T>::dequeue(std::size_t thread_id) {
     const auto idx = head->deq_idx.fetch_add(1);
     if (likely(idx < NODE_SIZE)) {
       // ** fast path ** read the pointer from the reserved slot
-      auto res = head->slots[idx].exchange(reinterpret_cast<pointer>(TAKEN));
+      res = head->slots[idx].exchange(reinterpret_cast<pointer>(TAKEN));
       if (likely(res != nullptr)) {
-        this->m_hazard_ptrs.clear_one(thread_id, HP_DEQ_HEAD);
-        return res;
+        break;
       }
 
+      // abandon the slot and attempt to dequeue from another slot
       continue;
     } else {
       // ** slow path ** advance the head pointer to the next node
@@ -110,7 +113,7 @@ typename queue<T>::pointer queue<T>::dequeue(std::size_t thread_id) {
   }
 
   this->m_hazard_ptrs.clear_one(thread_id, HP_DEQ_HEAD);
-  return nullptr;
+  return res;
 }
 
 template <typename T>

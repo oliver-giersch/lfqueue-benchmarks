@@ -16,7 +16,7 @@
 
 #include "common.hpp"
 #include "queues/faa/faa_array.hpp"
-#include "queues/faa+/faa_array.hpp"
+#include "queues/faa+/faa_array_plus.hpp"
 #include "queues/lcr/lcrq.hpp"
 #include "queues/msc/michael_scott.hpp"
 #include "queues/queue_ref.hpp"
