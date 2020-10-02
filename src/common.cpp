@@ -13,7 +13,10 @@ std::size_t measure_ns_per_iteration() {
   constexpr auto iters = 1000;
 
   const auto start = std::chrono::high_resolution_clock::now();
-  for (volatile auto i = 0; i < iters; ++i) {}
+  volatile auto i = 0;
+  while (i < iters) {
+    i = i + 1;
+  }
   const auto end = std::chrono::high_resolution_clock::now();
 
   const nanosecs dur = end - start;
@@ -117,7 +120,9 @@ void pin_current_thread(std::size_t thread_id) {
 
 void spin_for_ns(std::size_t ns) {
   static const auto NS_PER_ITER = measure_ns_per_iteration();
-
-  for (volatile auto i = 0; i < ns * NS_PER_ITER; ++i) {}
+  volatile auto i = 0;
+  while (i < ns * NS_PER_ITER) {
+    i = i + 1;
+  }
 }
 }
