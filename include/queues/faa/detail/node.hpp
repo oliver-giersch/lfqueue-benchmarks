@@ -14,10 +14,10 @@ template <typename T>
 struct queue<T>::node_t {
   using slot_array_t = std::array<std::atomic<queue::pointer>, queue::NODE_SIZE>;
 
-  alignas(CACHE_LINE_SIZE) std::atomic<std::uint32_t> enq_idx{ 0 };
-  alignas(CACHE_LINE_SIZE) std::atomic<std::uint32_t> deq_idx{ 0 };
-  slot_array_t             slots;
-  std::atomic<node_t*>     next{ nullptr };
+  std::atomic<std::uint32_t> deq_idx{ 0 };
+  slot_array_t               slots;
+  std::atomic<std::uint32_t> enq_idx{ 0 };
+  std::atomic<node_t*>       next{ nullptr };
 
   node_t() {
     this->init_slots();
