@@ -10,8 +10,8 @@ queue<T>::queue(std::size_t max_threads) :
   m_hazard_pointers{ max_threads }
 {
   auto head = new crq_node_t();
-  std::atomic_init(&this->m_head, head);
-  std::atomic_init(&this->m_tail, head);
+  this->m_head.store(head, std::memory_order_relaxed);
+  this->m_tail.store(head, std::memory_order_relaxed);
 }
 
 template <typename T>

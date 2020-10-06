@@ -9,8 +9,8 @@ queue<T>::queue(std::size_t max_threads) :
   m_hazard_pointers{ max_threads, 2, 100 }
 {
   const auto sentinel = new node_t{ nullptr };
-  std::atomic_init(&this->m_head, sentinel);
-  std::atomic_init(&this->m_tail, sentinel);
+  this->m_head.store(sentinel, std::memory_order_relaxed);
+  this->m_tail.store(sentinel, std::memory_order_relaxed);
 }
 
 template <typename T>

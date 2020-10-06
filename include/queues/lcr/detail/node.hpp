@@ -83,8 +83,8 @@ queue<T>::crq_node_t::crq_node_t(queue::pointer first) : crq_node_t() {
 template <typename T>
 void queue<T>::crq_node_t::init_cells() {
   for (std::size_t idx = 0; idx < RING_SIZE; ++idx) {
-    std::atomic_init(&this->cells[idx].idx, STATUS_BIT | idx);
-    std::atomic_init(&this->cells[idx].val, nullptr);
+    this->cells[idx].idx.store(STATUS_BIT | idx, std::memory_order_relaxed);
+    this->cells[idx].val.store(nullptr, std::memory_order_relaxed);
   }
 }
 

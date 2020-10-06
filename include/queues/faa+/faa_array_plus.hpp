@@ -16,8 +16,8 @@ namespace faa_plus {
 template <typename T>
 queue<T>::queue(std::size_t max_threads) : m_hazard_ptrs{ max_threads, 1 } {
   auto sentinel = new node_t();
-  std::atomic_init(&this->m_head, sentinel);
-  std::atomic_init(&this->m_tail, sentinel);
+  this->m_head.store(sentinel, std::memory_order_relaxed);
+  this->m_tail.store(sentinel, std::memory_order_relaxed);
 }
 
 template <typename T>
@@ -86,14 +86,14 @@ typename queue<T>::pointer queue<T>::dequeue(std::size_t thread_id) {
 
     // prevent incrementing dequeue index in case the queue is empty (original empty check)
     // original load ordering
-    /*if (head->deq_idx.load() >= head->enq_idx.load() && head->next.load() == nullptr) {
-      break;
-    }*/
-
-    // alternate load ordering
-    if (head->enq_idx.load() <= head->deq_idx.fetch_add(0) && head->next.load() == nullptr) {
+    if (head->deq_idx.load() >= head->enq_idx.load() && head->next.load() == nullptr) {
       break;
     }
+
+    // alternate load ordering
+    /*if (head->enq_idx.load() <= head->deq_idx.load() && head->next.load() == nullptr) {
+      break;
+    }*/
 
     /**
     // perform light-weight empty check
