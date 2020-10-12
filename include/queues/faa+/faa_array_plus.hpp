@@ -85,7 +85,7 @@ typename queue<T>::pointer queue<T>::dequeue(std::size_t thread_id) {
     }
 
     // prevent incrementing dequeue index in case the queue is empty (re-ordered empty check)
-    if (head->enq_idx.load() <= head->deq_idx.load() && head->next.load() == nullptr) {
+    if (head->enq_idx.load() <= head->deq_idx.fetch_add(0) && head->next.load() == nullptr) {
       break;
     }
 
