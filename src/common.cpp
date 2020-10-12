@@ -100,8 +100,8 @@ std::size_t parse_total_ops_str(const std::string& total_ops) {
 
 std::size_t parse_runs_str(const std::string& runs) {
   auto val = std::stoi(runs);
-  if (val < 0 || val > 50) {
-    throw std::invalid_argument("argument `runs` must be between 0 and 50");
+  if (val < 0 || val > 150) {
+    throw std::invalid_argument("argument `runs` must be between 0 and 150");
   }
 
   return static_cast<std::size_t>(val);
