@@ -9,6 +9,7 @@ enum class bench_type_t {
   BURSTS,
   READS,
   WRITES,
+  BALANCED,
 };
 
 enum class queue_type_t {

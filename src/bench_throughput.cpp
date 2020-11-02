@@ -474,6 +474,12 @@ void bench_reads_or_writes(
               reader_thread();
             }
             break;
+          case bench::bench_type_t::BALANCED:
+            if (thread % 2 == 0) {
+              writer_thread();
+            } else {
+              reader_thread();
+            }
           default: throw std::runtime_error("unreachable branch");
         }
 

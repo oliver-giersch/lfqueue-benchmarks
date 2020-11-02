@@ -69,8 +69,12 @@ bench_type_t parse_bench_str(const std::string& bench) {
     return bench_type_t::WRITES;
   }
 
+  if (bench == "mixed") {
+    return bench_type_t::BALANCED;
+  }
+
   throw std::invalid_argument(
-      "argument `bench` must be 'pairs', 'bursts', 'reads' or 'writes'"
+      "argument `bench` must be 'pairs', 'bursts', 'mixed', 'reads' or 'writes'"
   );
 }
 
