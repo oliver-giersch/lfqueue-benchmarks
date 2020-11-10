@@ -480,6 +480,7 @@ void bench_reads_or_writes(
             } else {
               reader_thread();
             }
+            break;
           default: throw std::runtime_error("unreachable branch");
         }
 
