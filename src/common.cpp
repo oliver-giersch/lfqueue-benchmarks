@@ -70,7 +70,7 @@ bench_type_t parse_bench_str(const std::string& bench) {
   }
 
   if (bench == "mixed") {
-    return bench_type_t::BALANCED;
+    return bench_type_t::MIXED;
   }
 
   throw std::invalid_argument(
