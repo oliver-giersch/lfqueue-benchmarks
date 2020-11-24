@@ -47,8 +47,12 @@ queue_type_t parse_queue_str(const std::string& queue) {
     return queue_type_t::MSC;
   }
 
+  if (queue == "ymc") {
+    return queue_type_t::YMC;
+  }
+
   throw std::invalid_argument(
-      "argument `queue` must be 'lcr', 'loo', 'faa', 'faa+' or 'msc'"
+      "argument `queue` must be 'lcr', 'loo', 'faa', 'faa+', 'msc' or 'ymc'"
   );
 }
 

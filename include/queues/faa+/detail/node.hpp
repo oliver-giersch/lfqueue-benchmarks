@@ -10,11 +10,7 @@
 namespace faa_plus {
 template <typename T>
 struct queue<T>::node_t {
-  struct aligned_slot_t {
-    std::atomic<queue::pointer> ptr;
-  };
-
-  using slot_array_t = std::array<aligned_slot_t, queue::NODE_SIZE>;
+  using slot_array_t = std::array<std::atomic<queue::pointer>, queue::NODE_SIZE>;
 
   std::atomic<std::uint32_t> deq_idx{ 0 };
   slot_array_t               slots;
@@ -27,11 +23,11 @@ struct queue<T>::node_t {
 
   explicit node_t(queue::pointer first) : enq_idx{ 1 } {
     this->init_slots();
-    this->slots[0].ptr.store(first, std::memory_order_relaxed);
+    this->slots[0].store(first, std::memory_order_relaxed);
   }
 
   bool cas_slot_at(std::size_t idx, queue::pointer expected, queue::pointer desired) {
-    return this->slots[idx].ptr.compare_exchange_strong(expected, desired);
+    return this->slots[idx].compare_exchange_strong(expected, desired);
   }
 
   bool cas_next(node_t* expected, node_t* desired) {
@@ -41,7 +37,7 @@ struct queue<T>::node_t {
 private:
   void init_slots() {
     for (auto& slot : this->slots) {
-      slot.ptr.store(nullptr, std::memory_order_relaxed);
+      slot.store(nullptr, std::memory_order_relaxed);
     }
   }
 };

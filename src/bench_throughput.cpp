@@ -22,6 +22,7 @@
 #include "queues/queue_ref.hpp"
 
 #include "looqueue/queue.hpp"
+#include "ymcqueue/queue.hpp"
 
 constexpr std::array<std::size_t, 11> THREADS{ 1, 2, 4, 8, 16, 24, 32, 48, 64, 80, 96 };
 
@@ -37,6 +38,8 @@ using lcr_queue          = lcr::queue<std::size_t>;
 using lcr_queue_ref      = queue_ref<lcr_queue>;
 using msc_queue          = msc::queue<std::size_t>;
 using msc_queue_ref      = queue_ref<msc_queue>;
+using ymc_queue          = ymc::queue<std::size_t>;
+using ymc_queue_ref      = queue_ref<ymc_queue>;
 
 /********** function pointer aliases ******************************************/
 
@@ -182,6 +185,18 @@ int main(int argc, char* argv[5]) {
           runs,
           [](auto& queue, auto thread_id) -> auto {
             return msc_queue_ref(queue, thread_id);
+          },
+          threads
+      );
+      break;
+    case bench::queue_type_t::YMC:
+      run_benches<ymc_queue, ymc_queue_ref>(
+          queue_name,
+          bench_type,
+          total_ops,
+          runs,
+          [](auto& queue, auto thread_id) -> auto {
+            return ymc_queue_ref(queue, thread_id);
           },
           threads
       );

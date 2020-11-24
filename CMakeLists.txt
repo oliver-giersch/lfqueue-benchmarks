@@ -35,6 +35,7 @@ endif()
 # looqueue build options
 set(LOO_USE_SEQ_CST CACHE BOOL ON)
 add_subdirectory(lib/looqueue)
+add_subdirectory(lib/ymcqueue)
 
 find_package(Threads REQUIRED)
 find_package(Boost 1.68.0 REQUIRED thread)
@@ -47,7 +48,8 @@ target_include_directories(bench_throughput PRIVATE include)
 target_link_libraries(bench_throughput PRIVATE
         ${Boost_LIBRARIES}
         Threads::Threads
-        looqueue)
+        looqueue
+        ymcqueue)
 
 if(ALLOCATOR MATCHES "mimalloc")
     target_link_libraries(bench_throughput PRIVATE mimalloc-static)

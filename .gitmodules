@@ -10,3 +10,7 @@
 	path = lib/rpmalloc
 	url = https://github.com/mjansson/rpmalloc
 	branch = master
+[submodule "lib/ymcqueue"]
+	path = lib/ymcqueue
+	url = https://github.com/oliver-giersch/ymc_queue
+	branch = master

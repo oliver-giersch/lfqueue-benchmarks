@@ -92,7 +92,7 @@ typename queue<T>::pointer queue<T>::dequeue(std::size_t thread_id) {
     const auto idx = head->deq_idx.fetch_add(1);
     if (likely(idx < NODE_SIZE)) {
       // ** fast path ** read the pointer from the reserved slot
-      res = head->slots[idx].ptr.exchange(reinterpret_cast<pointer>(TAKEN));
+      res = head->slots[idx].exchange(reinterpret_cast<pointer>(TAKEN));
       if (likely(res != nullptr)) {
         break;
       }
