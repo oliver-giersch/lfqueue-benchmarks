@@ -6,4 +6,5 @@ sbatch macro/faa.sh
 sbatch macro/faa_plus.sh
 sbatch macro/lcr.sh
 sbatch macro/loo.sh
+sbatch macro/ymc.sh
 
