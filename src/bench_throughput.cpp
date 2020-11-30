@@ -16,7 +16,6 @@
 
 #include "common.hpp"
 #include "queues/faa/faa_array.hpp"
-#include "queues/faa+/faa_array_plus.hpp"
 #include "queues/lcr/lcrq.hpp"
 #include "queues/msc/michael_scott.hpp"
 #include "queues/queue_ref.hpp"
@@ -28,12 +27,16 @@ constexpr std::array<std::size_t, 11> THREADS{ 1, 2, 4, 8, 16, 24, 32, 48, 64, 8
 
 /********** queue aliases *****************************************************/
 
+using faa::detail::queue_variant_t;
+
 using loo_queue          = loo::queue<std::size_t>;
 
 using faa_queue          = faa::queue<std::size_t>;
 using faa_queue_ref      = queue_ref<faa_queue>;
-using faa_plus_queue     = faa_plus::queue<std::size_t>;
-using faa_plus_queue_ref = queue_ref<faa_plus_queue>;
+using faa_queue_v1       = faa::queue<std::size_t, queue_variant_t::VARIANT_1>;
+using faa_queue_v1_ref   = queue_ref<faa_queue_v1>;
+using faa_queue_v2       = faa::queue<std::size_t, queue_variant_t::VARIANT_2>;
+using faa_queue_v2_ref   = queue_ref<faa_queue_v2>;
 using lcr_queue          = lcr::queue<std::size_t>;
 using lcr_queue_ref      = queue_ref<lcr_queue>;
 using msc_queue          = msc::queue<std::size_t>;
@@ -165,14 +168,26 @@ int main(int argc, char* argv[5]) {
           threads
       );
       break;
-    case bench::queue_type_t::FAA_PLUS:
-      run_benches<faa_plus_queue, faa_plus_queue_ref>(
+    case bench::queue_type_t::FAA_V1:
+      run_benches<faa_queue_v1, faa_queue_v1_ref>(
           queue_name,
           bench_type,
           total_ops,
           runs,
           [](auto& queue, auto thread_id) -> auto {
-            return faa_plus_queue_ref(queue, thread_id);
+            return faa_queue_v1_ref(queue, thread_id);
+          },
+          threads
+      );
+      break;
+    case bench::queue_type_t::FAA_V2:
+      run_benches<faa_queue_v2, faa_queue_v2_ref>(
+          queue_name,
+          bench_type,
+          total_ops,
+          runs,
+          [](auto& queue, auto thread_id) -> auto {
+            return faa_queue_v2_ref(queue, thread_id);
           },
           threads
       );
@@ -206,12 +221,12 @@ int main(int argc, char* argv[5]) {
 
 template <typename Q, typename R>
 void run_benches(
-    const std::string&      queue_name,
-    bench::bench_type_t     bench_type,
-    std::size_t             total_ops,
-    std::size_t             runs,
-    make_queue_ref_fn<Q, R> make_queue_ref,
-    std::span<const std::size_t>  threads_range
+    const std::string&           queue_name,
+    bench::bench_type_t          bench_type,
+    std::size_t                  total_ops,
+    std::size_t                  runs,
+    make_queue_ref_fn<Q, R>      make_queue_ref,
+    std::span<const std::size_t> threads_range
 ) {
   if (bench_type == bench::bench_type_t::PAIRS || bench_type == bench::bench_type_t::BURSTS) {
     for (auto threads : threads_range) {
@@ -231,7 +246,11 @@ void run_benches(
       }
     }
   } else {
-    for (auto threads : (threads_range | std::views::filter([](auto n) { return n >= 4; }))) {
+    for (auto threads : threads_range) {
+      if (threads < 4) {
+        continue;
+      }
+
       // aborts if hyper-threads would be used (assuming 2 HT per core)
       if (threads > std::thread::hardware_concurrency() / 2) {
         break;
@@ -259,6 +278,7 @@ void bench_pairwise(
     thread_ids.push_back(thread);
   }
 
+  // execute benchmark for `runs` iterations
   for (auto run = 0; run < runs; ++run) {
     auto queue = std::make_unique<Q>();
     boost::barrier barrier{ static_cast<unsigned>(threads + 1) };
@@ -333,6 +353,7 @@ void bench_bursts(
     thread_ids.push_back(thread);
   }
 
+  // execute benchmark for `runs` iterations
   for (auto run = 0; run < runs; ++run) {
     auto queue = std::make_unique<Q>();
     boost::barrier barrier{ static_cast<unsigned>(threads + 1) };
@@ -426,6 +447,7 @@ void bench_reads_or_writes(
     thread_ids.push_back(thread);
   }
 
+  // execute benchmark for `runs` iterations
   for (auto run = 0; run < runs; ++run) {
     auto queue = std::make_unique<Q>();
     boost::barrier barrier{ static_cast<unsigned>(threads + 1) };

@@ -7,8 +7,16 @@
 #include "looqueue/align.hpp"
 
 namespace faa {
-/** implementation of FAA-Array queue by Correia/Ramalhete */
-template <typename T>
+namespace detail {
+  enum class queue_variant_t {
+    ORIGINAL,
+    VARIANT_1,
+    VARIANT_2
+  };
+}
+
+/** implementation of FAA-Array queue by Correia & Ramalhete */
+template <typename T, detail::queue_variant_t V = detail::queue_variant_t::ORIGINAL>
 class queue {
 public:
   using pointer = T*;
@@ -32,7 +40,7 @@ private:
   /** enqueue and dequeue use the same hazard pointer */
   static constexpr std::size_t HP_ENQ_TAIL = 0;
   static constexpr std::size_t HP_DEQ_HEAD = 0;
-
+  /** token value for slots dequeued from */
   static constexpr std::size_t TAKEN = 0x1;
 
   struct node_t;

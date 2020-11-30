@@ -39,8 +39,12 @@ queue_type_t parse_queue_str(const std::string& queue) {
     return queue_type_t::FAA;
   }
 
-  if (queue == "faa+") {
-    return queue_type_t::FAA_PLUS;
+  if (queue == "faa_v1") {
+    return queue_type_t::FAA_V1;
+  }
+
+  if (queue == "faa_v2") {
+    return queue_type_t::FAA_V2;
   }
 
   if (queue == "msc") {
@@ -52,7 +56,7 @@ queue_type_t parse_queue_str(const std::string& queue) {
   }
 
   throw std::invalid_argument(
-      "argument `queue` must be 'lcr', 'loo', 'faa', 'faa+', 'msc' or 'ymc'"
+      "argument `queue` must be one of 'lcr', 'loo', 'faa', 'faa_v1', 'faa_v2', 'msc' or 'ymc'"
   );
 }
 
@@ -78,7 +82,7 @@ bench_type_t parse_bench_str(const std::string& bench) {
   }
 
   throw std::invalid_argument(
-      "argument `bench` must be 'pairs', 'bursts', 'mixed', 'reads' or 'writes'"
+      "argument `bench` must be one of 'pairs', 'bursts', 'mixed', 'reads' or 'writes'"
   );
 }
 
