@@ -8,11 +8,7 @@
 
 namespace faa {
 namespace detail {
-  enum class queue_variant_t {
-    ORIGINAL,
-    VARIANT_1,
-    VARIANT_2
-  };
+  enum class queue_variant_t { ORIGINAL, VARIANT_1, VARIANT_2 };
 }
 
 /** implementation of FAA-Array queue by Correia & Ramalhete */
@@ -21,6 +17,7 @@ class queue {
 public:
   using pointer = T*;
 
+  /** constructor */
   explicit queue(std::size_t max_threads = MAX_THREADS);
   ~queue() noexcept;
   __attribute__ ((noinline))

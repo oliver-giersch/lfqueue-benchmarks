@@ -4,23 +4,8 @@
 #include <string>
 
 namespace bench {
-enum class bench_type_t {
-  PAIRS,
-  BURSTS,
-  READS,
-  WRITES,
-  MIXED,
-};
-
-enum class queue_type_t {
-  LCR,
-  LOO,
-  FAA,
-  FAA_V1,
-  FAA_V2,
-  MSC,
-  YMC
-};
+enum class bench_type_t { PAIRS, BURSTS, READS, WRITES, MIXED };
+enum class queue_type_t { LCR, LOO, FAA, FAA_V1, FAA_V2, MSC, YMC };
 
 constexpr const char* display_str(queue_type_t queue) {
   switch (queue) {
