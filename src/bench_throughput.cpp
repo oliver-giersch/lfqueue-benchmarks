@@ -4,7 +4,6 @@
 #include <functional>
 #include <iostream>
 #include <memory>
-#include <ranges>
 #include <span>
 #include <stdexcept>
 #include <string>
@@ -25,9 +24,10 @@
 
 constexpr std::array<std::size_t, 11> THREADS{ 1, 2, 4, 8, 16, 24, 32, 48, 64, 80, 96 };
 
-/********** queue aliases *****************************************************/
-
 using faa::detail::queue_variant_t;
+
+
+/********** queue aliases *****************************************************/
 
 using loo_queue          = loo::queue<std::size_t>;
 
@@ -37,6 +37,8 @@ using faa_queue_v1       = faa::queue<std::size_t, queue_variant_t::VARIANT_1>;
 using faa_queue_v1_ref   = queue_ref<faa_queue_v1>;
 using faa_queue_v2       = faa::queue<std::size_t, queue_variant_t::VARIANT_2>;
 using faa_queue_v2_ref   = queue_ref<faa_queue_v2>;
+using faa_queue_v3       = faa::queue<std::size_t, queue_variant_t::VARIANT_3>;
+using faa_queue_v3_ref   = queue_ref<faa_queue_v3>;
 using lcr_queue          = lcr::queue<std::size_t>;
 using lcr_queue_ref      = queue_ref<lcr_queue>;
 using msc_queue          = msc::queue<std::size_t>;
@@ -192,6 +194,18 @@ int main(int argc, char* argv[5]) {
           threads
       );
       break;
+      case bench::queue_type_t::FAA_V3:
+          run_benches<faa_queue_v3, faa_queue_v3_ref>(
+          queue_name,
+          bench_type,
+          total_ops,
+          runs,
+          [](auto& queue, auto thread_id) -> auto {
+            return faa_queue_v3_ref(queue, thread_id);
+          },
+          threads
+          );
+          break;
     case bench::queue_type_t::MSC:
       run_benches<msc_queue, msc_queue_ref>(
           queue_name,

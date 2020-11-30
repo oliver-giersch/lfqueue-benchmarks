@@ -5,7 +5,7 @@
 
 namespace bench {
 enum class bench_type_t { PAIRS, BURSTS, READS, WRITES, MIXED };
-enum class queue_type_t { LCR, LOO, FAA, FAA_V1, FAA_V2, MSC, YMC };
+enum class queue_type_t { LCR, LOO, FAA, FAA_V1, FAA_V2, FAA_V3, MSC, YMC };
 
 constexpr const char* display_str(queue_type_t queue) {
   switch (queue) {
@@ -14,6 +14,7 @@ constexpr const char* display_str(queue_type_t queue) {
     case queue_type_t::FAA:    return "FAA";
     case queue_type_t::FAA_V1: return "FAA (variant 1)";
     case queue_type_t::FAA_V2: return "FAA (variant 2)";
+    case queue_type_t::FAA_V3: return "FAA (variant 3)";
     case queue_type_t::MSC:    return "MSC";
     case queue_type_t::YMC:    return "YMC";
     default:                   return "unknown";

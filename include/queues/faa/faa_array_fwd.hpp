@@ -8,7 +8,7 @@
 
 namespace faa {
 namespace detail {
-  enum class queue_variant_t { ORIGINAL, VARIANT_1, VARIANT_2 };
+  enum class queue_variant_t { ORIGINAL, VARIANT_1, VARIANT_2, VARIANT_3 };
 }
 
 /** implementation of FAAArrayQueue by Correia & Ramalhete */
