@@ -30,6 +30,7 @@ std::size_t  parse_total_ops_str(const std::string& total_ops);
 std::size_t  parse_runs_str(const std::string& runs);
 /** pins the thread with the given id to the core with the same number */
 void pin_current_thread(std::size_t thread_id);
+/** spins the current thread for at least `ns` nanoseconds */
 void spin_for_ns(std::size_t ns);
 }
 

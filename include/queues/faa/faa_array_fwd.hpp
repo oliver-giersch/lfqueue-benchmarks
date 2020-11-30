@@ -11,7 +11,7 @@ namespace detail {
   enum class queue_variant_t { ORIGINAL, VARIANT_1, VARIANT_2 };
 }
 
-/** implementation of FAA-Array queue by Correia & Ramalhete */
+/** implementation of FAAArrayQueue by Correia & Ramalhete */
 template <typename T, detail::queue_variant_t V = detail::queue_variant_t::ORIGINAL>
 class queue {
 public:
@@ -41,13 +41,14 @@ private:
   static constexpr std::size_t TAKEN = 0x1;
 
   struct node_t;
+  using hazard_pointers_t = memory::hazard_pointers<node_t>;
 
   bool cas_head(node_t* curr, node_t* next);
   bool cas_tail(node_t* curr, node_t* next);
 
   alignas(CACHE_LINE_ALIGN) std::atomic<node_t*> m_head;
   alignas(CACHE_LINE_ALIGN) std::atomic<node_t*> m_tail;
-  alignas(CACHE_LINE_ALIGN) memory::hazard_pointers<node_t> m_hazard_ptrs;
+  alignas(CACHE_LINE_ALIGN) hazard_pointers_t    m_hazard_ptrs;
 };
 }
 
