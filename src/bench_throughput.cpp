@@ -17,6 +17,7 @@
 #include "queues/faa/faa_array.hpp"
 #include "queues/lcr/lcrq.hpp"
 #include "queues/msc/michael_scott.hpp"
+#include "queues/lsc/lscq.hpp"
 #include "queues/queue_ref.hpp"
 
 #include "looqueue/queue.hpp"
@@ -41,6 +42,8 @@ using faa_queue_v3       = faa::queue<std::size_t, queue_variant_t::VARIANT_3>;
 using faa_queue_v3_ref   = queue_ref<faa_queue_v3>;
 using lcr_queue          = lcr::queue<std::size_t>;
 using lcr_queue_ref      = queue_ref<lcr_queue>;
+using lsc_queue          = lsc::queue<std::size_t>;
+using lsc_queue_ref      = queue_ref<lsc_queue>;
 using msc_queue          = msc::queue<std::size_t>;
 using msc_queue_ref      = queue_ref<msc_queue>;
 using ymc_queue          = ymc::queue<std::size_t>;
@@ -155,6 +158,18 @@ int main(int argc, char* argv[5]) {
           total_ops,
           runs,
           [](auto& queue, auto) -> auto& { return queue; },
+          threads
+      );
+      break;
+    case bench::queue_type_t::LSC:
+      run_benches<lsc_queue, lsc_queue_ref>(
+          queue_name,
+          bench_type,
+          total_ops,
+          runs,
+          [](auto& queue, auto thread_id) -> auto {
+            return lsc_queue_ref(queue, thread_id);
+          },
           threads
       );
       break;

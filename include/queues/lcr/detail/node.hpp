@@ -76,15 +76,15 @@ queue<T>::crq_node_t::crq_node_t() :
 
 template <typename T>
 queue<T>::crq_node_t::crq_node_t(queue::pointer first) : crq_node_t() {
-  this->cells[0].val.store(first, std::memory_order_relaxed);
-  this->cells[0].idx.store(STATUS_BIT | 0ull, std::memory_order_relaxed);
+  this->cells[0].val.store(first, RLX);
+  this->cells[0].idx.store(STATUS_BIT | 0ull, RLX);
 }
 
 template <typename T>
 void queue<T>::crq_node_t::init_cells() {
   for (std::size_t idx = 0; idx < RING_SIZE; ++idx) {
-    this->cells[idx].idx.store(STATUS_BIT | idx, std::memory_order_relaxed);
-    this->cells[idx].val.store(nullptr, std::memory_order_relaxed);
+    this->cells[idx].idx.store(STATUS_BIT | idx, RLX);
+    this->cells[idx].val.store(nullptr, RLX);
   }
 }
 
@@ -184,7 +184,7 @@ bool queue<T>::crq_node_t::cas_next(
     queue<T>::crq_node_t* cmp,
     queue<T>::crq_node_t* val
 ) {
-  return this->next.compare_exchange_strong(cmp, val);
+  return this->next.compare_exchange_strong(cmp, val, REL, RLX);
 }
 
 template <typename T>

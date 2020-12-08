@@ -27,54 +27,44 @@ queue<T>::~queue<T>() noexcept {
 template <typename T>
 void queue<T>::enqueue(queue::pointer elem, std::size_t thread_id) {
   if (elem == nullptr) {
-    throw std::invalid_argument("enqueue element must not be nullptr");
+    throw std::invalid_argument("enqueue element must not be null");
   }
 
   while (true) {
-    auto tail = this->m_hazard_pointers.protect_ptr(
-        this->m_tail.load(),
-        thread_id,
-        HP_ENQ_TAIL
-    );
-
-    if (tail != this->m_tail.load()) {
+    auto tail = this->m_hazard_pointers.protect_ptr(this->m_tail.load(ACQ), thread_id, HP_ENQ_TAIL);
+    if (tail != this->m_tail.load(RLX)) {
       continue;
     }
 
-    auto next = tail->next.load();
+    auto next = tail->next.load(ACQ);
     if (next != nullptr) {
-      this->m_tail.compare_exchange_strong(tail, next);
+      this->m_tail.compare_exchange_strong(tail, next, REL, RLX);
       continue;
     }
 
     if (tail->enqueue(elem)) {
-      this->m_hazard_pointers.clear_one(thread_id, HP_ENQ_TAIL);
-      return;
+      break;
     }
 
     auto crq = new crq_node_t(elem);
 
     if (tail->cas_next(nullptr, crq)) {
-      this->m_tail.compare_exchange_strong(tail, crq);
-      this->m_hazard_pointers.clear_one(thread_id, HP_ENQ_TAIL);
-      return;
-    } else {
-      delete crq;
+      this->m_tail.compare_exchange_strong(tail, crq, REL, RLX);
+      break;
     }
+
+    delete crq;
   }
+
+  this->m_hazard_pointers.clear_one(thread_id, HP_ENQ_TAIL);
 }
 
 template <typename T>
 typename queue<T>::pointer queue<T>::dequeue(std::size_t thread_id) {
   pointer res;
   while (true) {
-    auto head = this->m_hazard_pointers.protect_ptr(
-        this->m_head.load(),
-        thread_id,
-        HP_DEQ_HEAD
-    );
-
-    if (head != this->m_head.load()) {
+    auto head = this->m_hazard_pointers.protect_ptr(this->m_head.load(ACQ), thread_id, HP_DEQ_HEAD);
+    if (head != this->m_head.load(RLX)) {
       continue;
     }
 
@@ -83,7 +73,7 @@ typename queue<T>::pointer queue<T>::dequeue(std::size_t thread_id) {
       break;
     }
 
-    if (head->next.load() == nullptr) {
+    if (head->next.load(RLX) == nullptr) {
       res = nullptr;
       break;
     }
@@ -93,10 +83,8 @@ typename queue<T>::pointer queue<T>::dequeue(std::size_t thread_id) {
       break;
     }
 
-    auto next = head->next.load();
-    if (next == nullptr) {
-      continue;
-    } else if (this->m_head.compare_exchange_strong(head, next)) {
+    auto next = head->next.load(ACQ);
+    if (this->m_head.compare_exchange_strong(head, next, REL, RLX)) {
       this->m_hazard_pointers.retire(head, thread_id);
     }
   }

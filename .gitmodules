@@ -14,3 +14,7 @@
 	path = lib/ymcqueue
 	url = https://github.com/oliver-giersch/ymc_queue
 	branch = master
+[submodule "lib/scqueue"]
+	path = lib/scqueue
+	url = https://github.com/oliver-giersch/scq
+	branch = master

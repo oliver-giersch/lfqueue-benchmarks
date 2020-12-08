@@ -34,6 +34,10 @@ private:
   /** enqueue and dequeue use the same hazard pointer */
   static constexpr std::size_t HP_ENQ_TAIL = 0;
   static constexpr std::size_t HP_DEQ_HEAD = 0;
+  /** ordering constants */
+  static constexpr std::memory_order RLX = std::memory_order_relaxed;
+  static constexpr std::memory_order ACQ = std::memory_order_acquire;
+  static constexpr std::memory_order REL = std::memory_order_release;
 
   static constexpr std::uint64_t STATUS_BIT = 1ull << 63ull;
   static constexpr std::uint64_t INDEX_MASK = ~STATUS_BIT;

@@ -35,10 +35,12 @@ endif()
 # looqueue build options
 set(LOO_USE_SEQ_CST CACHE BOOL ON)
 add_subdirectory(lib/looqueue)
+add_subdirectory(lib/scqueue)
 add_subdirectory(lib/ymcqueue)
 
 find_package(Threads REQUIRED)
 find_package(Boost 1.68.0 REQUIRED thread)
+
 
 # bench throughput
 add_executable(bench_throughput
@@ -46,8 +48,11 @@ add_executable(bench_throughput
         src/common.cpp)
 target_include_directories(bench_throughput PRIVATE include)
 target_link_libraries(bench_throughput PRIVATE
+        # we use a local static version of libatomic
+        ${CMAKE_SOURCE_DIR}/lib/libatomic.a
         ${Boost_LIBRARIES}
         Threads::Threads
+        scqueue
         looqueue
         ymcqueue)
 
