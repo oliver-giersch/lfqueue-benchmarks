@@ -41,7 +41,6 @@ add_subdirectory(lib/ymcqueue)
 find_package(Threads REQUIRED)
 find_package(Boost 1.68.0 REQUIRED thread)
 
-
 # bench throughput
 add_executable(bench_throughput
         src/bench_throughput.cpp
