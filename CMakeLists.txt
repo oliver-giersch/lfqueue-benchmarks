@@ -13,7 +13,6 @@ if(ALLOCATOR MATCHES "mimalloc")
     set(MI_BUILD_SHARED CACHE BOOL OFF)
     set(MI_BUILD_OBJECT CACHE BOOL OFF)
     set(MI_BUILD_TESTS  CACHE BOOL OFF)
-    set(MI_USE_CXX      CACHE BOOL OFF)
 
     add_subdirectory(lib/mimalloc)
 elseif(ALLOCATOR MATCHES "rpmalloc")
@@ -47,8 +46,6 @@ add_executable(bench_throughput
         src/common.cpp)
 target_include_directories(bench_throughput PRIVATE include)
 target_link_libraries(bench_throughput PRIVATE
-        # we use a local static version of libatomic
-        ${CMAKE_SOURCE_DIR}/lib/libatomic.a
         ${Boost_LIBRARIES}
         Threads::Threads
         scqueue
