@@ -14,15 +14,15 @@ namespace faa {
 template <typename T, detail::queue_variant_t V>
 queue<T, V>::queue(std::size_t max_threads) : m_hazard_ptrs{ max_threads, 1 } {
   auto sentinel = new node_t();
-  this->m_head.store(sentinel, std::memory_order_relaxed);
-  this->m_tail.store(sentinel, std::memory_order_relaxed);
+  this->m_head.store(sentinel, relaxed);
+  this->m_tail.store(sentinel, relaxed);
 }
 
 template <typename T, detail::queue_variant_t V>
 queue<T, V>::~queue() noexcept {
-  auto curr = this->m_head.load(std::memory_order_relaxed);
+  auto curr = this->m_head.load(relaxed);
   while (curr != nullptr) {
-    const auto next = curr->next.load(std::memory_order_relaxed);
+    const auto next = curr->next.load(relaxed);
     delete curr;
     curr = next;
   }
@@ -31,40 +31,43 @@ queue<T, V>::~queue() noexcept {
 template <typename T, detail::queue_variant_t V>
 void queue<T, V>::enqueue(queue::pointer elem, std::size_t thread_id) {
   if (elem == nullptr) {
-    throw std::invalid_argument("enqueue element must not be nullptr");
+    throw std::invalid_argument("enqueue element must not be null");
   }
 
   while (true) {
-    const auto tail = this->m_hazard_ptrs.protect_ptr(this->m_tail.load(), thread_id, HP_ENQ_TAIL);
-    if (tail != this->m_tail.load()) {
+    const auto tail = this->m_hazard_ptrs.protect_ptr(
+        this->m_tail.load(relaxed), thread_id, HP_ENQ_TAIL
+    );
+
+    if (tail != this->m_tail.load(acquire)) {
       continue;
     }
 
-    const auto idx = tail->enq_idx.fetch_add(1);
+    const auto idx = tail->enq_idx.fetch_add(1, relaxed);
     if (likely(idx < NODE_SIZE)) {
       // ** fast path ** write (CAS) pointer directly into the reserved slot
-      if (likely(tail->cas_slot_at(idx, nullptr, elem))) {
+      if (likely(tail->cas_slot_at(idx, nullptr, elem, release))) {
         break;
       }
 
       continue;
     } else {
       // ** slow path ** append new tail node or update the tail pointer
-      if (tail != this->m_tail.load()) {
+      if (tail != this->m_tail.load(relaxed)) {
         continue;
       }
 
-      const auto next = tail->next.load();
+      const auto next = tail->next.load(acquire);
       if (next == nullptr) {
         auto node = new node_t(elem);
-        if (tail->cas_next(nullptr, node)) {
-          this->cas_tail(tail, node);
+        if (tail->cas_next(nullptr, node, release)) {
+          this->cas_tail(tail, node, release);
           break;
         }
 
         delete node;
       } else {
-        this->cas_tail(tail, next);
+        this->cas_tail(tail, next, release);
       }
     }
   }
@@ -77,35 +80,24 @@ typename queue<T, V>::pointer queue<T, V>::dequeue(std::size_t thread_id) {
   pointer res = nullptr;
   while (true) {
     // acquire hazard pointer for head node
-    const auto head = this->m_hazard_ptrs.protect_ptr(this->m_head.load(), thread_id, HP_DEQ_HEAD);
-    if (head != this->m_head.load()) {
+    const auto head = this->m_hazard_ptrs.protect_ptr(
+        this->m_head.load(relaxed), thread_id, HP_DEQ_HEAD
+    );
+
+    if (head != this->m_head.load(acquire)) {
       continue;
     }
 
     // prevent incrementing dequeue index in case the queue is empty
-    if constexpr (V == detail::queue_variant_t::ORIGINAL) {
-      if (head->deq_idx.load() >= head->enq_idx.load() && head->next.load() == nullptr) {
-        break;
-      }
-    } else if constexpr (V == detail::queue_variant_t::VARIANT_1) {
-      if (head->enq_idx.load() <= head->deq_idx.load() && head->next.load() == nullptr) {
-        break;
-      }
-    } else if constexpr (V == detail::queue_variant_t::VARIANT_2) {
-      if (head->enq_idx.load() <= head->deq_idx.fetch_add(0) && head->next.load() == nullptr) {
-        break;
-      }
-    } else {
-      if (head->deq_idx.fetch_add(0) >= head->enq_idx.load() && head->next.load() == nullptr) {
-        break;
-      }
+    if (this->is_empty(head)) {
+      break;
     }
 
     // increment the dequeue index to reserve an array slot
-    const auto idx = head->deq_idx.fetch_add(1);
+    const auto idx = head->deq_idx.fetch_add(1, relaxed);
     if (likely(idx < NODE_SIZE)) {
       // ** fast path ** read the pointer from the reserved slot
-      res = head->slots[idx].exchange(reinterpret_cast<pointer>(TAKEN));
+      res = head->slots[idx].exchange(reinterpret_cast<pointer>(TAKEN), acquire);
       if (likely(res != nullptr)) {
         break;
       }
@@ -114,12 +106,12 @@ typename queue<T, V>::pointer queue<T, V>::dequeue(std::size_t thread_id) {
       continue;
     } else {
       // ** slow path ** advance the head pointer to the next node
-      const auto next = head->next.load();
+      const auto next = head->next.load(acquire);
       if (next == nullptr) {
         break;
       }
 
-      if (this->cas_head(head, next)) {
+      if (this->cas_head(head, next, acquire)) {
         this->m_hazard_ptrs.retire(head, thread_id);
       }
 
@@ -132,13 +124,46 @@ typename queue<T, V>::pointer queue<T, V>::dequeue(std::size_t thread_id) {
 }
 
 template <typename T, detail::queue_variant_t V>
-bool queue<T, V>::cas_head(queue::node_t* expected, queue::node_t* desired) {
-  return this->m_head.compare_exchange_strong(expected, desired);
+bool queue<T, V>::is_empty(queue::node_t* head) {
+  if constexpr (V == detail::queue_variant_t::ORIGINAL) {
+    return
+      head->deq_idx.load(relaxed) >= head->enq_idx.load(acquire)
+      && head->next.load(acquire) == nullptr;
+  } else if constexpr (V == detail::queue_variant_t::VARIANT_1) {
+    return
+      head->enq_idx.load(relaxed) <= head->deq_idx.load(acquire)
+      && head->next.load(acquire) == nullptr;
+  } else if constexpr (V == detail::queue_variant_t::VARIANT_2) {
+    return
+        head->enq_idx.load(relaxed) <= head->deq_idx.fetch_add(0, acquire)
+        && head->next.load(acquire) == nullptr;
+  } else {
+    return
+        head->deq_idx.fetch_add(0, relaxed) >= head->enq_idx.load(acquire)
+        && head->next.load(acquire) == nullptr;
+  }
 }
 
 template <typename T, detail::queue_variant_t V>
-bool queue<T, V>::cas_tail(queue::node_t* expected, queue::node_t* desired) {
-  return this->m_tail.compare_exchange_strong(expected, desired);
+bool queue<T, V>::cas_head(
+    queue::node_t* expected,
+    queue::node_t* desired,
+    std::memory_order order
+) {
+  return this->m_head.compare_exchange_strong(
+      expected, desired, order, relaxed
+  );
+}
+
+template <typename T, detail::queue_variant_t V>
+bool queue<T, V>::cas_tail(
+    queue::node_t* expected,
+    queue::node_t* desired,
+    std::memory_order order
+) {
+  return this->m_tail.compare_exchange_strong(
+      expected, desired, order, relaxed
+  );
 }
 }
 

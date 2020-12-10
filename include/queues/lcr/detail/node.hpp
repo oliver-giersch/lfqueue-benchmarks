@@ -9,12 +9,55 @@
 
 namespace lcr {
 namespace detail {
+template <typename T>
+struct cell_t {
+  using pointer = T*;
+
+  std::uint64_t idx : 63;
+  bool is_safe : 1;
+  pointer* ptr;
+};
+}
+
+template <typename T>
+struct alignas(CACHE_LINE_SIZE) queue<T>::atomic_cell_t {
+  using cell_t = detail::cell_t<pointer>;
+
+  std::atomic_uint64_t idx;
+  std::atomic<pointer> ptr{ nullptr };
+
+  bool compare_exchange_weak(
+      cell_t& expected,
+      cell_t desired,
+      std::memory_order success = std::memory_order_seq_cst,
+      std::memory_order failure = std::memory_order_seq_cst
+  ) {
+    (void) success;
+    (void) failure;
+    std::uint8_t res;
+    asm volatile(
+      "lock cmpxchg16b %0"
+      : "+m"(*this), "=@ccz"(res), "+a"(reinterpret_cast<uint64_t&>(expected)), "+d"(expected.ptr)
+      : "b"(*reinterpret_cast<uint64_t*>(&desired)), "c"(desired.ptr)
+      : "memory"
+    );
+    return res != 0;
+  }
+}
+
+
+namespace detail {
+
+
+
   bool test_and_set_mst(std::atomic<std::uint64_t>& atomic) {
     std::uint8_t res;
     asm volatile("lock btsq $63, %0; setnc %1" : "+m"(*&atomic), "=a"(res) :: "memory");
     return res != 0;
   }
 }
+
+
 
 /** queue::cell_t definition */
 template <typename T>

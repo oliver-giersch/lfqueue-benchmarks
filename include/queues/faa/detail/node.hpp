@@ -15,7 +15,7 @@ struct queue<T, V>::node_t {
   using slot_array_t = std::array<std::atomic<queue::pointer>, queue::NODE_SIZE>;
 
   std::atomic<std::uint32_t> deq_idx{ 0 };
-  slot_array_t               slots{};
+  slot_array_t               slots{ };
   std::atomic<std::uint32_t> enq_idx{ 0 };
   std::atomic<node_t*>       next{ nullptr };
 
@@ -28,12 +28,21 @@ struct queue<T, V>::node_t {
     this->slots[0].store(first, std::memory_order_relaxed);
   }
 
-  bool cas_slot_at(std::size_t idx, queue::pointer expected, queue::pointer desired) {
-    return this->slots[idx].compare_exchange_strong(expected, desired);
+  bool cas_slot_at(
+      std::size_t idx,
+      queue::pointer expected,
+      queue::pointer desired,
+      std::memory_order order
+  ) {
+    return this->slots[idx].compare_exchange_strong(
+        expected, desired, order, std::memory_order_relaxed
+    );
   }
 
-  bool cas_next(node_t* expected, node_t* desired) {
-    return this->next.compare_exchange_strong(expected, desired);
+  bool cas_next(node_t* expected, node_t* desired, std::memory_order order) {
+    return this->next.compare_exchange_strong(
+        expected, desired, order, std::memory_order_relaxed
+    );
   }
 
 private:
