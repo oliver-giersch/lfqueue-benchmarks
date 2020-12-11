@@ -5,13 +5,14 @@
 
 #include "hazard_pointers/hazard_pointers.hpp"
 #include "looqueue/align.hpp"
+#include "queues/queue_ref.hpp"
 
 namespace lcr {
 template <typename T>
 /** Implementation of (L)CRQ by Morrison & Afek. */
 class queue {
+  /** queue ring size */
   static constexpr std::size_t RING_SIZE   = 1024;
-  static constexpr std::size_t MAX_THREADS = 128;
   /** enqueue and dequeue use the same hazard pointer */
   static constexpr std::size_t HP_ENQ_TAIL = 0;
   static constexpr std::size_t HP_DEQ_HEAD = 0;
@@ -33,7 +34,7 @@ public:
   using pointer = T*;
 
   /** constructor */
-  explicit queue(std::size_t max_threads = MAX_THREADS);
+  explicit queue(std::size_t max_threads = hazard_pointers_t::MAX_THREADS);
   /** destructor */
   ~queue() noexcept;
 
@@ -45,6 +46,9 @@ public:
   queue& operator=(const queue&&) = delete;
   queue& operator=(queue&&)       = delete;
 };
+
+template <typename T>
+using queue_ref = queue_ref<queue<T>>;
 }
 
 #endif /* LOO_QUEUE_BENCHMARK_LCRQ_FWD_HPP */

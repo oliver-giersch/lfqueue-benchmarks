@@ -61,3 +61,11 @@ endif()
 if(STATIC)
     target_link_libraries(bench_throughput PRIVATE -static -static-libgcc -static-libstdc++)
 endif()
+
+add_executable(test_queue test/test_queue.cpp src/common.cpp)
+target_include_directories(test_queue PRIVATE include/)
+target_link_libraries(test_queue PRIVATE
+        Threads::Threads
+        looqueue
+        scqueue
+        ymcqueue)

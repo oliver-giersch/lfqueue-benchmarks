@@ -13,11 +13,13 @@ class hazard_pointers final {
 public:
   using pointer = T*;
 
+  static constexpr std::size_t MAX_THREADS = 128;
+
   /** constructor */
   explicit hazard_pointers(
-    std::size_t num_threads,
+    std::size_t num_threads         = MAX_THREADS,
     std::size_t num_hazard_pointers = MAX_HAZARD_POINTERS,
-    std::size_t scan_threshold = DEFAULT_SCAN_THRESHOLD
+    std::size_t scan_threshold      = DEFAULT_SCAN_THRESHOLD
   );
 
   /** destructor - deletes all remaining retired objects */

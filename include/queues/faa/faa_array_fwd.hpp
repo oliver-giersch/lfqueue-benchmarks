@@ -5,6 +5,7 @@
 
 #include "hazard_pointers/hazard_pointers.hpp"
 #include "looqueue/align.hpp"
+#include "queues/queue_ref.hpp"
 
 namespace faa {
 namespace detail {
@@ -53,6 +54,18 @@ public:
   queue& operator=(const queue&&) = delete;
   queue& operator=(queue&&)       = delete;
 };
+
+template <typename T>
+using queue_ref = queue_ref<queue<T>>;
+
+template <typename T>
+using queue_ref_v1 = queue_ref<queue<T, detail::queue_variant_t::VARIANT_1>>;
+
+template <typename T>
+using queue_ref_v2 = queue_ref<queue<T, detail::queue_variant_t::VARIANT_2>>;
+
+template <typename T>
+using queue_ref_v3 = queue_ref<queue<T, detail::queue_variant_t::VARIANT_3>>;
 }
 
 #endif /* LOO_QUEUE_BENCHMARK_FAA_ARRAY_FWD_HPP */

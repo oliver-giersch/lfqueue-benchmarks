@@ -6,6 +6,7 @@
 
 #include "hazard_pointers/hazard_pointers.hpp"
 #include "scqueue/scq.hpp"
+#include "queues/queue_ref.hpp"
 
 namespace lsc {
 template <typename T>
@@ -58,11 +59,17 @@ public:
 };
 
 template <typename T>
+using queue_ref = queue_ref<queue<T>>;
+
+template <typename T>
 struct queue<T>::scq_node_t {
+  using scq_ring_t = typename scq::ring<T, 9>;
+  static_assert(scq_ring_t::CAPACITY == 1024);
+
   scq_node_t() = default;
   explicit scq_node_t(pointer first): ring{ first } {}
 
-  scq::ring<T, 10> ring{ };
+  scq_ring_t ring{ };
   std::atomic<scq_node_t*> next{ nullptr };
 
   bool cas_next(
