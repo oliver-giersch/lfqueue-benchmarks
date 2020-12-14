@@ -63,8 +63,7 @@ using queue_ref = queue_ref<queue<T>>;
 
 template <typename T>
 struct queue<T>::scq_node_t {
-  using scq_ring_t = typename scq::ring<T, 9>;
-  static_assert(scq_ring_t::CAPACITY == 1024);
+  using scq_ring_t = typename scq::ring_t<T, 9>;
 
   scq_node_t() = default;
   explicit scq_node_t(pointer first): ring{ first } {}
@@ -73,9 +72,7 @@ struct queue<T>::scq_node_t {
   std::atomic<scq_node_t*> next{ nullptr };
 
   bool cas_next(
-      scq_node_t* expected,
-      scq_node_t* desired,
-      std::memory_order order
+      scq_node_t* expected, scq_node_t* desired, std::memory_order order
   ) {
     return this->next.compare_exchange_strong(
         expected, desired, order, relaxed
