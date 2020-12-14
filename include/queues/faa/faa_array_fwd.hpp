@@ -59,13 +59,13 @@ template <typename T>
 using queue_ref = queue_ref<queue<T>>;
 
 template <typename T>
-using queue_ref_v1 = queue_ref<queue<T, detail::queue_variant_t::VARIANT_1>>;
+using queue_ref_v1 = ::queue_ref<queue<T, detail::queue_variant_t::VARIANT_1>>;
 
 template <typename T>
-using queue_ref_v2 = queue_ref<queue<T, detail::queue_variant_t::VARIANT_2>>;
+using queue_ref_v2 = ::queue_ref<queue<T, detail::queue_variant_t::VARIANT_2>>;
 
 template <typename T>
-using queue_ref_v3 = queue_ref<queue<T, detail::queue_variant_t::VARIANT_3>>;
+using queue_ref_v3 = ::queue_ref<queue<T, detail::queue_variant_t::VARIANT_3>>;
 }
 
 #endif /* LOO_QUEUE_BENCHMARK_FAA_ARRAY_FWD_HPP */

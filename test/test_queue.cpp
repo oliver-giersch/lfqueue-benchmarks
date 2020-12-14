@@ -11,6 +11,7 @@
 #include "queues/faa/faa_array.hpp"
 #include "queues/lcr/lcrq.hpp"
 #include "queues/lsc/lscq.hpp"
+#include "queues/msc/michael_scott.hpp"
 
 #include "ymcqueue/queue.hpp"
 
@@ -48,6 +49,10 @@ int main(int argc, const char* argv[]) {
     }
     case bench::queue_type_t::LSC: {
       lsc::queue<std::size_t> queue{};
+      return !test_queue(queue);
+    }
+    case bench::queue_type_t::MSC: {
+      msc::queue<std::size_t> queue{};
       return !test_queue(queue);
     }
     case bench::queue_type_t::YMC: {

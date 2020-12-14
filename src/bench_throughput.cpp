@@ -33,19 +33,19 @@ using faa::detail::queue_variant_t;
 using loo_queue          = loo::queue<std::size_t>;
 
 using faa_queue          = faa::queue<std::size_t>;
-using faa_queue_ref      = queue_ref<faa_queue>;
+using faa_queue_ref      = faa::queue_ref<std::size_t>;
 using faa_queue_v1       = faa::queue<std::size_t, queue_variant_t::VARIANT_1>;
-using faa_queue_v1_ref   = queue_ref<faa_queue_v1>;
+using faa_queue_v1_ref   = faa::queue_ref_v1<std::size_t>;
 using faa_queue_v2       = faa::queue<std::size_t, queue_variant_t::VARIANT_2>;
-using faa_queue_v2_ref   = queue_ref<faa_queue_v2>;
+using faa_queue_v2_ref   = faa::queue_ref_v2<std::size_t>;
 using faa_queue_v3       = faa::queue<std::size_t, queue_variant_t::VARIANT_3>;
-using faa_queue_v3_ref   = queue_ref<faa_queue_v3>;
+using faa_queue_v3_ref   = faa::queue_ref_v3<std::size_t>;
 using lcr_queue          = lcr::queue<std::size_t>;
-using lcr_queue_ref      = queue_ref<lcr_queue>;
+using lcr_queue_ref      = lcr::queue_ref<std::size_t>;
 using lsc_queue          = lsc::queue<std::size_t>;
-using lsc_queue_ref      = queue_ref<lsc_queue>;
+using lsc_queue_ref      = lsc::queue_ref<std::size_t>;
 using msc_queue          = msc::queue<std::size_t>;
-using msc_queue_ref      = queue_ref<msc_queue>;
+using msc_queue_ref      = msc::queue_ref<std::size_t>;
 using ymc_queue          = ymc::queue<std::size_t>;
 using ymc_queue_ref      = queue_ref<ymc_queue>;
 
