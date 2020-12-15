@@ -111,7 +111,7 @@ typename queue<T, V>::pointer queue<T, V>::dequeue(std::size_t thread_id) {
         break;
       }
 
-      if (this->cas_head(head, next, acquire)) {
+      if (this->cas_head(head, next, release)) {
         this->m_hazard_ptrs.retire(head, thread_id);
       }
 
