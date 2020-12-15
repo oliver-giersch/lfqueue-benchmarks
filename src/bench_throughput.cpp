@@ -58,12 +58,12 @@ using make_queue_ref_fn = std::function<R(Q&, std::size_t)>;
 /** runs all bench iterations for the specified bench and queue */
 template <typename Q, typename R>
 void run_benches(
-    const std::string&      queue_name,
-    bench::bench_type_t     bench_type,
-    std::size_t             total_ops,
-    std::size_t             runs,
-    make_queue_ref_fn<Q, R> make_queue_ref,
-    std::span<const std::size_t>  threads_range
+    const std::string&           queue_name,
+    bench::bench_type_t          bench_type,
+    std::size_t                  total_ops,
+    std::size_t                  runs,
+    std::span<const std::size_t> threads_range,
+    make_queue_ref_fn<Q, R>      make_queue_ref
 );
 
 /** runs the pairwise enqueue/dequeue benchmark */
@@ -140,108 +140,72 @@ int main(int argc, char* argv[5]) {
   switch (queue_type) {
     case bench::queue_type_t::LCR:
       run_benches<lcr_queue, lcr_queue_ref>(
-          queue_name,
-          bench_type,
-          total_ops,
-          runs,
+          queue_name, bench_type, total_ops, runs, threads,
           [](auto& queue, auto thread_id) -> auto {
             return lcr_queue_ref(queue, thread_id);
-          },
-          threads
+          }
       );
       break;
     case bench::queue_type_t::LOO:
       run_benches<loo_queue, loo_queue&>(
-          queue_name,
-          bench_type,
-          total_ops,
-          runs,
-          [](auto& queue, auto) -> auto& { return queue; },
-          threads
+          queue_name, bench_type, total_ops, runs, threads,
+          [](auto& queue, auto) -> auto& { return queue; }
       );
       break;
     case bench::queue_type_t::LSC:
       run_benches<lsc_queue, lsc_queue_ref>(
-          queue_name,
-          bench_type,
-          total_ops,
-          runs,
+          queue_name, bench_type, total_ops, runs, threads,
           [](auto& queue, auto thread_id) -> auto {
             return lsc_queue_ref(queue, thread_id);
-          },
-          threads
+          }
       );
       break;
     case bench::queue_type_t::FAA:
       run_benches<faa_queue, faa_queue_ref>(
-          queue_name,
-          bench_type,
-          total_ops,
-          runs,
+          queue_name, bench_type, total_ops, runs, threads,
           [](auto& queue, auto thread_id) -> auto {
             return faa_queue_ref(queue, thread_id);
-          },
-          threads
+          }
       );
       break;
     case bench::queue_type_t::FAA_V1:
       run_benches<faa_queue_v1, faa_queue_v1_ref>(
-          queue_name,
-          bench_type,
-          total_ops,
-          runs,
+          queue_name, bench_type, total_ops, runs, threads,
           [](auto& queue, auto thread_id) -> auto {
             return faa_queue_v1_ref(queue, thread_id);
-          },
-          threads
+          }
       );
       break;
     case bench::queue_type_t::FAA_V2:
       run_benches<faa_queue_v2, faa_queue_v2_ref>(
-          queue_name,
-          bench_type,
-          total_ops,
-          runs,
+          queue_name, bench_type, total_ops, runs, threads,
           [](auto& queue, auto thread_id) -> auto {
             return faa_queue_v2_ref(queue, thread_id);
-          },
-          threads
+          }
       );
       break;
       case bench::queue_type_t::FAA_V3:
-          run_benches<faa_queue_v3, faa_queue_v3_ref>(
-          queue_name,
-          bench_type,
-          total_ops,
-          runs,
+        run_benches<faa_queue_v3, faa_queue_v3_ref>(
+          queue_name, bench_type, total_ops, runs, threads,
           [](auto& queue, auto thread_id) -> auto {
             return faa_queue_v3_ref(queue, thread_id);
-          },
-          threads
-          );
-          break;
+          }
+        );
+    break;
     case bench::queue_type_t::MSC:
       run_benches<msc_queue, msc_queue_ref>(
-          queue_name,
-          bench_type,
-          total_ops,
-          runs,
+          queue_name, bench_type, total_ops, runs, threads,
           [](auto& queue, auto thread_id) -> auto {
             return msc_queue_ref(queue, thread_id);
-          },
-          threads
+          }
       );
       break;
     case bench::queue_type_t::YMC:
       run_benches<ymc_queue, ymc_queue_ref>(
-          queue_name,
-          bench_type,
-          total_ops,
-          runs,
+          queue_name, bench_type, total_ops, runs, threads,
           [](auto& queue, auto thread_id) -> auto {
             return ymc_queue_ref(queue, thread_id);
-          },
-          threads
+          }
       );
       break;
   }
@@ -253,8 +217,8 @@ void run_benches(
     bench::bench_type_t          bench_type,
     std::size_t                  total_ops,
     std::size_t                  runs,
-    make_queue_ref_fn<Q, R>      make_queue_ref,
-    std::span<const std::size_t> threads_range
+    std::span<const std::size_t> threads_range,
+    make_queue_ref_fn<Q, R>      make_queue_ref
 ) {
   if (bench_type == bench::bench_type_t::PAIRS || bench_type == bench::bench_type_t::BURSTS) {
     for (auto threads : threads_range) {
