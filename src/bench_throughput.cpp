@@ -27,7 +27,6 @@ constexpr std::array<std::size_t, 11> THREADS{ 1, 2, 4, 8, 16, 24, 32, 48, 64, 8
 
 using faa::detail::queue_variant_t;
 
-
 /********** queue aliases *****************************************************/
 
 using loo_queue          = loo::queue<std::size_t>;
