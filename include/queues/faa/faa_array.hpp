@@ -146,9 +146,7 @@ bool queue<T, V>::is_empty(queue::node_t* head) {
 
 template <typename T, detail::queue_variant_t V>
 bool queue<T, V>::cas_head(
-    queue::node_t* expected,
-    queue::node_t* desired,
-    std::memory_order order
+    queue::node_t* expected, queue::node_t* desired, std::memory_order order
 ) {
   return this->m_head.compare_exchange_strong(
       expected, desired, order, relaxed
@@ -157,9 +155,7 @@ bool queue<T, V>::cas_head(
 
 template <typename T, detail::queue_variant_t V>
 bool queue<T, V>::cas_tail(
-    queue::node_t* expected,
-    queue::node_t* desired,
-    std::memory_order order
+    queue::node_t* expected, queue::node_t* desired, std::memory_order order
 ) {
   return this->m_tail.compare_exchange_strong(
       expected, desired, order, relaxed
