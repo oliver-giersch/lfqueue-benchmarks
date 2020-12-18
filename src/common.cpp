@@ -35,10 +35,6 @@ queue_type_t parse_queue_str(const std::string& queue) {
     return queue_type_t::LOO;
   }
 
-  if (queue == "lsc") {
-    return queue_type_t::LSC;
-  }
-
   if (queue == "faa") {
     return queue_type_t::FAA;
   }
@@ -59,12 +55,20 @@ queue_type_t parse_queue_str(const std::string& queue) {
     return queue_type_t::MSC;
   }
 
+  if (queue == "scq2") {
+    return queue_type_t::SCQ2;
+  }
+
+  if (queue == "scqd") {
+    return queue_type_t::SCQD;
+  }
+
   if (queue == "ymc") {
     return queue_type_t::YMC;
   }
 
   throw std::invalid_argument(
-      "argument `queue` must be one of 'lcr', 'loo', 'faa', 'faa_v1', 'faa_v2', 'msc' or 'ymc'"
+      "argument `queue` must be one of 'lcr', 'loo', 'faa', 'faa_v1', 'faa_v2', 'msc', 'scq2', 'scqd' or 'ymc'"
   );
 }
 

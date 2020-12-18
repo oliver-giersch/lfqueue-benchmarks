@@ -4,12 +4,6 @@
 #include "faa_array_fwd.hpp"
 #include "queues/faa/detail/node.hpp"
 
-#if defined(__GNUG__) || defined(__clang__) || defined(__INTEL_COMPILER)
-#define likely(cond) __builtin_expect ((cond), 1)
-#else
-#define likely(cond) cond
-#endif
-
 namespace faa {
 template <typename T, detail::queue_variant_t V>
 queue<T, V>::queue(std::size_t max_threads) : m_hazard_ptrs{ max_threads, 1 } {
@@ -44,9 +38,9 @@ void queue<T, V>::enqueue(queue::pointer elem, std::size_t thread_id) {
     }
 
     const auto idx = tail->enq_idx.fetch_add(1, relaxed);
-    if (likely(idx < NODE_SIZE)) {
+    if (idx < NODE_SIZE) [[likely]] {
       // ** fast path ** write (CAS) pointer directly into the reserved slot
-      if (likely(tail->cas_slot_at(idx, nullptr, elem, release))) {
+      if (tail->cas_slot_at(idx, nullptr, elem, release)) [[likely]] {
         break;
       }
 
@@ -95,10 +89,10 @@ typename queue<T, V>::pointer queue<T, V>::dequeue(std::size_t thread_id) {
 
     // increment the dequeue index to reserve an array slot
     const auto idx = head->deq_idx.fetch_add(1, relaxed);
-    if (likely(idx < NODE_SIZE)) {
+    if (idx < NODE_SIZE) [[likely]] {
       // ** fast path ** read the pointer from the reserved slot
       res = head->slots[idx].exchange(reinterpret_cast<pointer>(TAKEN), acquire);
-      if (likely(res != nullptr)) {
+      if (res != nullptr) [[likely]] {
         break;
       }
 

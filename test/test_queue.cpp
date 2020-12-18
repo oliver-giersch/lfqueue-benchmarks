@@ -40,23 +40,27 @@ int main(int argc, const char* argv[]) {
 
   switch (bench::parse_queue_str(queue_variant)) {
     case bench::queue_type_t::FAA: {
-      faa::queue<std::size_t> queue{};
+      faa::queue<std::size_t> queue{ };
       return !test_queue(queue);
     }
     case bench::queue_type_t::LCR: {
-      lcr::queue<std::size_t> queue{};
-      return !test_queue(queue);
-    }
-    case bench::queue_type_t::LSC: {
-      lsc::queue<std::size_t> queue{};
+      lcr::queue<std::size_t> queue{ };
       return !test_queue(queue);
     }
     case bench::queue_type_t::MSC: {
-      msc::queue<std::size_t> queue{};
+      msc::queue<std::size_t> queue{ };
+      return !test_queue(queue);
+    }
+    case bench::queue_type_t::SCQ2: {
+      scq::cas2::queue<std::size_t> queue{ };
+      return !test_queue(queue);
+    }
+    case bench::queue_type_t::SCQD: {
+      scq::d::queue<std::size_t> queue{ };
       return !test_queue(queue);
     }
     case bench::queue_type_t::YMC: {
-      ymc::queue<std::size_t> queue{};
+      ymc::queue<std::size_t> queue{ };
       return !test_queue(queue);
     }
     default: throw std::runtime_error("unsupported queue variant");

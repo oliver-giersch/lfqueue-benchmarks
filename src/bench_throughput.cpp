@@ -29,24 +29,26 @@ using faa::detail::queue_variant_t;
 
 /********** queue aliases *****************************************************/
 
-using loo_queue          = loo::queue<std::size_t>;
+using loo_queue        = loo::queue<std::size_t>;
 
-using faa_queue          = faa::queue<std::size_t>;
-using faa_queue_ref      = faa::queue_ref<std::size_t>;
-using faa_queue_v1       = faa::queue<std::size_t, queue_variant_t::VARIANT_1>;
-using faa_queue_v1_ref   = faa::queue_ref_v1<std::size_t>;
-using faa_queue_v2       = faa::queue<std::size_t, queue_variant_t::VARIANT_2>;
-using faa_queue_v2_ref   = faa::queue_ref_v2<std::size_t>;
-using faa_queue_v3       = faa::queue<std::size_t, queue_variant_t::VARIANT_3>;
-using faa_queue_v3_ref   = faa::queue_ref_v3<std::size_t>;
-using lcr_queue          = lcr::queue<std::size_t>;
-using lcr_queue_ref      = lcr::queue_ref<std::size_t>;
-using lsc_queue          = lsc::queue<std::size_t>;
-using lsc_queue_ref      = lsc::queue_ref<std::size_t>;
-using msc_queue          = msc::queue<std::size_t>;
-using msc_queue_ref      = msc::queue_ref<std::size_t>;
-using ymc_queue          = ymc::queue<std::size_t>;
-using ymc_queue_ref      = queue_ref<ymc_queue>;
+using faa_queue        = faa::queue<std::size_t>;
+using faa_queue_ref    = faa::queue_ref<std::size_t>;
+using faa_queue_v1     = faa::queue<std::size_t, queue_variant_t::VARIANT_1>;
+using faa_queue_v1_ref = faa::queue_ref_v1<std::size_t>;
+using faa_queue_v2     = faa::queue<std::size_t, queue_variant_t::VARIANT_2>;
+using faa_queue_v2_ref = faa::queue_ref_v2<std::size_t>;
+using faa_queue_v3     = faa::queue<std::size_t, queue_variant_t::VARIANT_3>;
+using faa_queue_v3_ref = faa::queue_ref_v3<std::size_t>;
+using lcr_queue        = lcr::queue<std::size_t>;
+using lcr_queue_ref    = lcr::queue_ref<std::size_t>;
+using lscqd_queue      = scq::d::queue<std::size_t>;
+using lscqd_queue_ref  = scq::d::queue_ref<std::size_t>;
+using lscq2_queue      = scq::cas2::queue<std::size_t>;
+using lscq2_queue_ref  = scq::cas2::queue_ref<std::size_t>;
+using msc_queue        = msc::queue<std::size_t>;
+using msc_queue_ref    = msc::queue_ref<std::size_t>;
+using ymc_queue        = ymc::queue<std::size_t>;
+using ymc_queue_ref    = queue_ref<ymc_queue>;
 
 /********** function pointer aliases ******************************************/
 
@@ -152,14 +154,6 @@ int main(int argc, char* argv[5]) {
           [](auto& queue, auto) -> auto& { return queue; }
       );
       break;
-    case bench::queue_type_t::LSC:
-      run_benches<lsc_queue, lsc_queue_ref>(
-          queue_name, bench_type, total_ops, runs, threads,
-          [](auto& queue, auto thread_id) -> auto {
-            return lsc_queue_ref(queue, thread_id);
-          }
-      );
-      break;
     case bench::queue_type_t::FAA:
       run_benches<faa_queue, faa_queue_ref>(
           queue_name, bench_type, total_ops, runs, threads,
@@ -197,6 +191,22 @@ int main(int argc, char* argv[5]) {
           queue_name, bench_type, total_ops, runs, threads,
           [](auto& queue, auto thread_id) -> auto {
             return msc_queue_ref(queue, thread_id);
+          }
+      );
+      break;
+    case bench::queue_type_t::SCQ2:
+      run_benches<lscq2_queue, lscq2_queue_ref>(
+          queue_name, bench_type, total_ops, runs, threads,
+          [](auto& queue, auto thread_id) -> auto {
+            return lscq2_queue_ref(queue, thread_id);
+          }
+      );
+      break;
+    case bench::queue_type_t::SCQD:
+      run_benches<lscqd_queue, lscqd_queue_ref>(
+          queue_name, bench_type, total_ops, runs, threads,
+          [](auto& queue, auto thread_id) -> auto {
+            return lscqd_queue_ref(queue, thread_id);
           }
       );
       break;
