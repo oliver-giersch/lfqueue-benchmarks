@@ -68,7 +68,8 @@ queue_type_t parse_queue_str(const std::string& queue) {
   }
 
   throw std::invalid_argument(
-      "argument `queue` must be one of 'lcr', 'loo', 'faa', 'faa_v1', 'faa_v2', 'msc', 'scq2', 'scqd' or 'ymc'"
+      "argument `queue` must be one of 'lcr', 'loo', 'faa', 'faa_v1', 'faa_v2',"
+      "'msc', 'scq2', 'scqd' or 'ymc'"
   );
 }
 

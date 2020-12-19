@@ -1,10 +1,10 @@
 #!/bin/sh
 
-#SBATCH --job-name=lsc_macro
+#SBATCH --job-name=scq2_micro
 #SBATCH --time 01:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --partition=standard96:test
 #SBATCH -L ansys:1
 
-sh ./macro/run_reads_and_writes.sh lsc 10M 100
+sh ./micro/run_pairs_and_bursts.sh scq2 10M 100

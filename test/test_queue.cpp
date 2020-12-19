@@ -16,7 +16,7 @@
 #include "ymcqueue/queue.hpp"
 
 constexpr std::size_t THREAD_COUNT = 8;
-constexpr std::size_t COUNT = 100 * 1'000;
+constexpr std::size_t COUNT = 100'000;
 
 constexpr auto EXPECTED = THREAD_COUNT * (COUNT * (COUNT - 1) / 2);
 
@@ -105,15 +105,22 @@ bool test_queue(Q& queue) {
 
       while (!start.load()) {}
 
+      auto attempts = 0;
       while (deq_count < COUNT) {
         const auto res = queue.dequeue(deq_id);
         if (res != nullptr) {
+          attempts = 0;
           if (*res >= COUNT) {
             throw std::runtime_error("invalid element dequeued");
           }
 
           thread_sum += *res;
           deq_count += 1;
+        }
+
+        attempts += 1;
+        if (attempts > 10'000'000) {
+          throw std::runtime_error("a thread failed to dequeue the specified number of elements");
         }
       }
 

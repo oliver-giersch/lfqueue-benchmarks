@@ -116,10 +116,11 @@ void queue<T, N>::enqueue(pointer elem, std::size_t thread_id) {
 
   while (true) {
     auto tail = this->m_hazard_pointers.protect(
-        this->m_tail.load(acquire), thread_id, HP_ENQ_TAIL
+        this->m_tail.load(relaxed),
+        thread_id, HP_ENQ_TAIL
     );
 
-    if (tail != this->m_tail.load(relaxed)) {
+    if (tail != this->m_tail.load(acquire)) {
       continue;
     }
 
@@ -132,7 +133,7 @@ void queue<T, N>::enqueue(pointer elem, std::size_t thread_id) {
       break;
     }
 
-    auto node = new N{ elem };
+    auto node = new node_t{ elem };
 
     if (tail->cas_next(nullptr, node, release)) {
       this->m_tail.compare_exchange_strong(tail, node, release, relaxed);
@@ -150,10 +151,11 @@ typename queue<T, N>::pointer queue<T, N>::dequeue(std::size_t thread_id) {
   pointer result;
   while (true) {
     auto head = this->m_hazard_pointers.protect_ptr(
-        this->m_head.load(acquire), thread_id, HP_DEQ_HEAD
+        this->m_head.load(relaxed),
+        thread_id, HP_DEQ_HEAD
     );
 
-    if (head != this->m_head.load(relaxed)) {
+    if (head != this->m_head.load(acquire)) {
       continue;
     }
 
