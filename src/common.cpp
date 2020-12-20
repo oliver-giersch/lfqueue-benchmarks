@@ -1,8 +1,10 @@
 #include "common.hpp"
 
+#include <charconv>
 #include <chrono>
 #include <iostream>
 #include <stdexcept>
+#include <string_view>
 
 #include <pthread.h>
 
@@ -24,9 +26,19 @@ std::size_t measure_ns_per_iteration() {
 
   return ns_per_iter == 0 ? 1 : ns_per_iter;
 }
+
+std::size_t string_view_to_size(std::string_view string) {
+  std::size_t result;
+  const auto success = std::from_chars(string.begin(), string.end(), result);
+  if (success.ec == std::errc::invalid_argument) {
+    throw std::invalid_argument("failed to convert string to size");
+  }
+
+  return result;
+}
 }
 
-queue_type_t parse_queue_str(const std::string& queue) {
+queue_type_t parse_queue_str(const std::string_view queue) {
   if (queue == "lcr") {
     return queue_type_t::LCR;
   }
@@ -73,7 +85,7 @@ queue_type_t parse_queue_str(const std::string& queue) {
   );
 }
 
-bench_type_t parse_bench_str(const std::string& bench) {
+bench_type_t parse_bench_str(const std::string_view bench) {
   if (bench == "pairs") {
     return bench_type_t::PAIRS;
   }
@@ -99,7 +111,7 @@ bench_type_t parse_bench_str(const std::string& bench) {
   );
 }
 
-std::size_t parse_total_ops_str(const std::string& total_ops) {
+std::size_t parse_total_ops_str(std::string_view total_ops) {
   constexpr const char* ERR_MSG =
       "argument 'total_ops' must contain an integer number between 1 and 100 "
       "followed by either K or M";
@@ -111,7 +123,7 @@ std::size_t parse_total_ops_str(const std::string& total_ops) {
   const auto sub = total_ops.substr(0, total_ops.size() - 1);
   const auto fac = total_ops.back();
 
-  auto val = std::stoi(sub);
+  auto val = string_view_to_size(sub);
   if (val <= 0 || val > 100) {
     throw std::invalid_argument(ERR_MSG);
   }
@@ -123,8 +135,8 @@ std::size_t parse_total_ops_str(const std::string& total_ops) {
   }
 }
 
-std::size_t parse_runs_str(const std::string& runs) {
-  auto val = std::stoi(runs);
+std::size_t parse_runs_str(const std::string_view runs) {
+  auto val = string_view_to_size(runs);
   if (val < 0 || val > 150) {
     throw std::invalid_argument("argument `runs` must be between 0 and 150");
   }

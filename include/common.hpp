@@ -1,13 +1,13 @@
 #ifndef LOO_QUEUE_BENCHES_COMMON_HPP
 #define LOO_QUEUE_BENCHES_COMMON_HPP
 
-#include <string>
+#include <string_view>
 
 namespace bench {
 enum class bench_type_t { PAIRS, BURSTS, READS, WRITES, MIXED };
 enum class queue_type_t { LCR, LOO, FAA, FAA_V1, FAA_V2, FAA_V3, MSC, SCQ2, SCQD, YMC };
 
-constexpr const char* display_str(queue_type_t queue) {
+constexpr std::string_view display_str(queue_type_t queue) {
   switch (queue) {
     case queue_type_t::LCR:    return "LCR";
     case queue_type_t::LOO:    return "LOO";
@@ -24,13 +24,13 @@ constexpr const char* display_str(queue_type_t queue) {
 }
 
 /** parses the given string to the corresponding queue type */
-queue_type_t parse_queue_str(const std::string& queue);
+queue_type_t parse_queue_str(std::string_view queue);
 /** parses the given string to the corresponding bench type */
-bench_type_t parse_bench_str(const std::string& bench);
+bench_type_t parse_bench_str(std::string_view bench);
 /** parses the benchmark `size` argument string */
-std::size_t  parse_total_ops_str(const std::string& total_ops);
+std::size_t  parse_total_ops_str(std::string_view total_ops);
 /** parses the benchmark `runs` argument string */
-std::size_t  parse_runs_str(const std::string& runs);
+std::size_t  parse_runs_str(std::string_view runs);
 /** pins the thread with the given id to the core with the same number */
 void pin_current_thread(std::size_t thread_id);
 /** spins the current thread for at least `ns` nanoseconds */

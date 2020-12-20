@@ -6,7 +6,6 @@
 #include <memory>
 #include <span>
 #include <stdexcept>
-#include <string>
 #include <string_view>
 #include <thread>
 #include <vector>
@@ -26,6 +25,7 @@
 constexpr std::array<std::size_t, 11> THREADS{ 1, 2, 4, 8, 16, 24, 32, 48, 64, 80, 96 };
 
 using faa::detail::queue_variant_t;
+using thread_span_t = std::span<const std::size_t>;
 
 /********** queue aliases *****************************************************/
 
@@ -60,18 +60,18 @@ using make_queue_ref_fn = std::function<R(Q&, std::size_t)>;
 /** runs all bench iterations for the specified bench and queue */
 template <typename Q, typename R>
 void run_benches(
-    const std::string&           queue_name,
-    bench::bench_type_t          bench_type,
-    std::size_t                  total_ops,
-    std::size_t                  runs,
-    std::span<const std::size_t> threads_range,
-    make_queue_ref_fn<Q, R>      make_queue_ref
+    std::string_view        queue_name,
+    bench::bench_type_t     bench_type,
+    std::size_t             total_ops,
+    std::size_t             runs,
+    thread_span_t           threads_range,
+    make_queue_ref_fn<Q, R> make_queue_ref
 );
 
 /** runs the pairwise enqueue/dequeue benchmark */
 template <typename Q, typename R>
 void bench_pairwise(
-    const std::string&      queue_name,
+    std::string_view        queue_name,
     std::size_t             total_ops,
     std::size_t             runs,
     std::size_t             threads,
@@ -81,7 +81,7 @@ void bench_pairwise(
 /** runs the burst benchmarks */
 template <typename Q, typename R>
 void bench_bursts(
-    const std::string&      queue_name,
+    std::string_view        queue_name,
     std::size_t             total_ops,
     std::size_t             runs,
     std::size_t             threads,
@@ -91,7 +91,7 @@ void bench_bursts(
 /** runs either the read-heavy or write-heavy benchmark */
 template <typename Q, typename R>
 void bench_reads_or_writes(
-    const std::string&      queue_name,
+    std::string_view        queue_name,
     bench::bench_type_t     bench_type,
     std::size_t             total_ops,
     std::size_t             runs,
@@ -100,8 +100,7 @@ void bench_reads_or_writes(
 );
 
 /** potentially extracts the alternative threads span from the argument vector */
-std::span<const std::size_t>
-extract_thread_span(
+thread_span_t extract_thread_span(
     int argc,
     char* argv[6],
     std::array<std::size_t, 1>& res
@@ -109,7 +108,7 @@ extract_thread_span(
   if (argc < 6) {
     return std::span(THREADS.begin(), THREADS.end());
   } else {
-    const auto str = std::string_view(argv[5]);
+    const std::string_view str{ argv[5] };
     const auto err = std::from_chars(str.begin(), str.end(), res[0]);
     if (err.ec != std::errc()) {
       throw std::invalid_argument("alternative thread range: expected integer");
@@ -124,10 +123,10 @@ int main(int argc, char* argv[5]) {
     throw std::invalid_argument("too few program arguments");
   }
 
-  const std::string queue(argv[1]);
-  const std::string bench(argv[2]);
-  const std::string total_ops_str(argv[3]);
-  const std::string runs_str(argv[4]);
+  const std::string_view queue{ argv[1] };
+  const std::string_view bench{ argv[2] };
+  const std::string_view total_ops_str{ argv[3] };
+  const std::string_view runs_str{ argv[4] };
 
   const auto queue_type = bench::parse_queue_str(queue);
   const auto bench_type = bench::parse_bench_str(bench);
@@ -137,7 +136,7 @@ int main(int argc, char* argv[5]) {
   auto alternative_thread_range = std::to_array({ static_cast<std::size_t>(0) });
   const auto threads = extract_thread_span(argc, argv, alternative_thread_range);
 
-  const std::string queue_name{ bench::display_str(queue_type) };
+  const std::string_view queue_name{ bench::display_str(queue_type) };
 
   switch (queue_type) {
     case bench::queue_type_t::LCR:
@@ -223,12 +222,12 @@ int main(int argc, char* argv[5]) {
 
 template <typename Q, typename R>
 void run_benches(
-    const std::string&           queue_name,
-    bench::bench_type_t          bench_type,
-    std::size_t                  total_ops,
-    std::size_t                  runs,
-    std::span<const std::size_t> threads_range,
-    make_queue_ref_fn<Q, R>      make_queue_ref
+    std::string_view        queue_name,
+    bench::bench_type_t     bench_type,
+    std::size_t             total_ops,
+    std::size_t             runs,
+    thread_span_t           threads_range,
+    make_queue_ref_fn<Q, R> make_queue_ref
 ) {
   if (bench_type == bench::bench_type_t::PAIRS || bench_type == bench::bench_type_t::BURSTS) {
     for (auto threads : threads_range) {
@@ -265,7 +264,7 @@ void run_benches(
 
 template <typename Q, typename R>
 void bench_pairwise(
-    const std::string&      queue_name,
+    std::string_view        queue_name,
     std::size_t             total_ops,
     std::size_t             runs,
     std::size_t             threads,
@@ -340,7 +339,7 @@ void bench_pairwise(
 
 template <typename Q, typename R>
 void bench_bursts(
-    const std::string&      queue_name,
+    std::string_view        queue_name,
     std::size_t             total_ops,
     std::size_t             runs,
     std::size_t             threads,
@@ -429,7 +428,7 @@ void bench_bursts(
 
 template <typename Q, typename R>
 void bench_reads_or_writes(
-    const std::string&      queue_name,
+    std::string_view        queue_name,
     bench::bench_type_t     bench_type,
     std::size_t             total_ops,
     std::size_t             runs,

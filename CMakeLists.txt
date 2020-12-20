@@ -32,7 +32,6 @@ if(STATIC)
 endif()
 
 # looqueue build options
-set(LOO_USE_SEQ_CST CACHE BOOL ON)
 add_subdirectory(lib/looqueue)
 add_subdirectory(lib/scqueue)
 add_subdirectory(lib/ymcqueue)
