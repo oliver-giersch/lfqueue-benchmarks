@@ -58,10 +58,10 @@ public:
 };
 
 namespace detail {
-template <typename T, template <typename, std::size_t> typename BQ>
+template <typename T, template <typename, std::size_t, bool> typename BQ>
 struct node_t {
   using pointer = T*;
-  using bounded_queue_t = BQ<T, 10>;
+  using bounded_queue_t = BQ<T, 10, true>;
 
   static_assert(bounded_queue_t::CAPACITY == 1024);
 
@@ -129,7 +129,7 @@ void queue<T, N>::enqueue(pointer elem, std::size_t thread_id) {
       continue;
     }
 
-    if (tail->bounded_queue.template try_enqueue<true>(elem)) {
+    if (tail->bounded_queue.try_enqueue(elem)) {
       break;
     }
 
