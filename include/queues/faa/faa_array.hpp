@@ -7,9 +7,9 @@
 namespace faa {
 template <typename T, detail::queue_variant_t V>
 queue<T, V>::queue(std::size_t max_threads) : m_hazard_ptrs{ max_threads, 1 } {
-  auto sentinel = new node_t();
-  this->m_head.store(sentinel, relaxed);
-  this->m_tail.store(sentinel, relaxed);
+  auto head = new node_t();
+  this->m_head.store(head, relaxed);
+  this->m_tail.store(head, relaxed);
 }
 
 template <typename T, detail::queue_variant_t V>
@@ -24,16 +24,17 @@ queue<T, V>::~queue() noexcept {
 
 template <typename T, detail::queue_variant_t V>
 void queue<T, V>::enqueue(queue::pointer elem, std::size_t thread_id) {
-  if (elem == nullptr) {
+  if (elem == nullptr) [[unlikely]] {
     throw std::invalid_argument("enqueue element must not be null");
   }
 
   while (true) {
     const auto tail = this->m_hazard_ptrs.protect_ptr(
-        this->m_tail.load(relaxed), thread_id, HP_ENQ_TAIL
+        this->m_tail.load(relaxed),
+        thread_id, HP_ENQ_TAIL
     );
 
-    if (tail != this->m_tail.load(acquire)) {
+    if (tail != this->m_tail.load(acquire)) [[unlikely]] {
       continue;
     }
 
@@ -75,10 +76,11 @@ typename queue<T, V>::pointer queue<T, V>::dequeue(std::size_t thread_id) {
   while (true) {
     // acquire hazard pointer for head node
     const auto head = this->m_hazard_ptrs.protect_ptr(
-        this->m_head.load(relaxed), thread_id, HP_DEQ_HEAD
+        this->m_head.load(relaxed),
+        thread_id, HP_DEQ_HEAD
     );
 
-    if (head != this->m_head.load(acquire)) {
+    if (head != this->m_head.load(acquire)) [[unlikely]] {
       continue;
     }
 

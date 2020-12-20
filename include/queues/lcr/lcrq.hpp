@@ -54,10 +54,10 @@ void queue<T>::enqueue(queue::pointer elem, std::size_t thread_id) {
 
   while (true) {
     auto tail = this->m_hazard_pointers.protect_ptr(
-        this->m_tail.load(acquire), thread_id, HP_ENQ_TAIL
+        this->m_tail.load(relaxed), thread_id, HP_ENQ_TAIL
     );
 
-    if (tail != this->m_tail.load(relaxed)) {
+    if (tail != this->m_tail.load(acquire)) [[unlikely]] {
       continue;
     }
 
@@ -66,7 +66,7 @@ void queue<T>::enqueue(queue::pointer elem, std::size_t thread_id) {
       continue;
     }
 
-    if (tail->ring.try_enqueue(elem)) {
+    if (tail->ring.try_enqueue(elem)) [[likely]] {
       break;
     }
 
@@ -88,14 +88,15 @@ typename queue<T>::pointer queue<T>::dequeue(std::size_t thread_id) {
   pointer res;
   while (true) {
     auto head = this->m_hazard_pointers.protect_ptr(
-        this->m_head.load(acquire), thread_id, HP_DEQ_HEAD
+        this->m_head.load(relaxed),
+        thread_id, HP_DEQ_HEAD
     );
 
-    if (head != this->m_head.load(relaxed)) {
+    if (head != this->m_head.load(acquire)) {
       continue;
     }
 
-    if (head->ring.try_dequeue(res)) {
+    if (head->ring.try_dequeue(res)) [[likely]] {
       break;
     }
 
