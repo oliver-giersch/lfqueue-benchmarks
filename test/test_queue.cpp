@@ -69,17 +69,16 @@ int main(int argc, const char* argv[]) {
 
 template <ConcurrentQueue<std::size_t> Q>
 bool test_queue(Q& queue) {
-  std::vector<std::vector<std::size_t>> thread_elements{ };
-  thread_elements.reserve(THREAD_COUNT);
+  std::vector<std::size_t> thread_elements{ };
+  thread_elements.reserve(COUNT);
 
-  for (auto thread = 0; thread < THREAD_COUNT; ++thread) {
-    thread_elements.emplace_back();
-    thread_elements.back().reserve(COUNT);
-
-    for (auto i = 0; i < COUNT; ++i) {
-      thread_elements.back().push_back(i);
-    }
+  for (auto i = 0; i < COUNT; ++i) {
+    thread_elements.push_back(i);
   }
+
+  const auto in_bounds = [&](const auto pointer) {
+    return pointer >= &thread_elements.front() && pointer <= &thread_elements.back();
+  };
 
   std::vector<std::thread> threads{};
   threads.reserve(THREAD_COUNT * 2);
@@ -93,7 +92,7 @@ bool test_queue(Q& queue) {
       while (!start.load()) {}
 
       for (auto op = 0; op < COUNT; ++op) {
-        queue.enqueue(&thread_elements.at(thread).at(op), thread);
+        queue.enqueue(&thread_elements.at(op), thread);
       }
     });
 
@@ -110,7 +109,7 @@ bool test_queue(Q& queue) {
         const auto res = queue.dequeue(deq_id);
         if (res != nullptr) {
           attempts = 0;
-          if (*res >= COUNT) {
+          if (!in_bounds(res)) {
             throw std::runtime_error("invalid element dequeued");
           }
 

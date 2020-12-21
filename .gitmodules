@@ -5,7 +5,7 @@
 [submodule "lib/looqueue"]
 	path = lib/looqueue
 	url = https://github.com/oliver-giersch/looqueue
-	branch = slim
+	branch = master
 [submodule "lib/rpmalloc"]
 	path = lib/rpmalloc
 	url = https://github.com/mjansson/rpmalloc
