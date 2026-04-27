@@ -6,10 +6,6 @@
 	path = lib/looqueue
 	url = https://github.com/oliver-giersch/looqueue
 	branch = develop
-[submodule "lib/rpmalloc"]
-	path = lib/rpmalloc
-	url = https://github.com/mjansson/rpmalloc
-	branch = master
 [submodule "lib/ymcqueue"]
 	path = lib/ymcqueue
 	url = https://github.com/oliver-giersch/ymc_queue

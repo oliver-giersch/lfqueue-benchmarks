@@ -28,7 +28,6 @@ endif()
 
 if(STATIC)
     MESSAGE("using static linking")
-    set(Boost_USE_STATIC_LIBS ON)
 endif()
 
 # looqueue build options
@@ -37,7 +36,6 @@ add_subdirectory(lib/scqueue)
 add_subdirectory(lib/ymcqueue)
 
 find_package(Threads REQUIRED)
-find_package(Boost 1.68.0 REQUIRED thread)
 
 # bench throughput
 add_executable(bench_throughput
@@ -45,7 +43,6 @@ add_executable(bench_throughput
         src/common.cpp)
 target_include_directories(bench_throughput PRIVATE include)
 target_link_libraries(bench_throughput PRIVATE
-        ${Boost_LIBRARIES}
         Threads::Threads
         scqueue
         looqueue

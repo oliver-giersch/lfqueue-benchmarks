@@ -10,8 +10,6 @@
 #include <thread>
 #include <vector>
 
-#include "boost/thread/barrier.hpp"
-
 #include "common.hpp"
 #include "queues/faa/faa_array.hpp"
 #include "queues/lcr/lcrq.hpp"
@@ -282,7 +280,7 @@ void bench_pairwise(
   // execute benchmark for `runs` iterations
   for (auto run = 0; run < runs; ++run) {
     auto queue = std::make_unique<Q>();
-    boost::barrier barrier{ static_cast<unsigned>(threads + 1) };
+    std::barrier barrier{ static_cast<unsigned>(threads + 1) };
 
     // pre-allocates a vector for storing each thread's join handle
     std::vector<std::thread> thread_handles{};
