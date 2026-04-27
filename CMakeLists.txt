@@ -3,7 +3,7 @@ project(looqueue-benchmarks CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 
-set(ALLOCATOR "system" CACHE STRING "Choose global allocator override [system|mimalloc|rpmalloc]")
+set(ALLOCATOR "system" CACHE STRING "Choose global allocator override [system|mimalloc]")
 option(CASCADE_LAKE "using -march=cascadelake -mtune=cascadelake" OFF)
 option(STATIC "using static linking" OFF)
 
@@ -15,8 +15,6 @@ if(ALLOCATOR MATCHES "mimalloc")
     set(MI_BUILD_TESTS  CACHE BOOL OFF)
 
     add_subdirectory(lib/mimalloc)
-elseif(ALLOCATOR MATCHES "rpmalloc")
-    add_subdirectory(lib)
 endif()
 
 MESSAGE("using allocator: ${ALLOCATOR}")
@@ -50,8 +48,6 @@ target_link_libraries(bench_throughput PRIVATE
 
 if(ALLOCATOR MATCHES "mimalloc")
     target_link_libraries(bench_throughput PRIVATE mimalloc-static)
-elseif(ALLOCATOR MATCHES "rpmalloc")
-    target_link_libraries(bench_throughput PRIVATE rpmalloc)
 endif()
 
 if(STATIC)
