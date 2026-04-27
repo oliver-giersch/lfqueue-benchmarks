@@ -1,4 +1,5 @@
 #include <array>
+#include <barrier>
 #include <charconv>
 #include <chrono>
 #include <functional>
@@ -294,7 +295,7 @@ void bench_pairwise(
         auto&& queue_ref = make_queue_ref(*queue, thread);
 
         // all threads synchronize at this barrier before starting
-        barrier.wait();
+        barrier.arrive_and_wait();
 
         for (auto op = 0; op < ops_per_threads; ++op) {
           if (op % 2 == 0) {
@@ -310,14 +311,14 @@ void bench_pairwise(
         }
 
         // all threads synchronize at this barrier before completing
-        barrier.wait();
+        barrier.arrive_and_wait();
       }));
     }
 
-    barrier.wait();
+    barrier.arrive_and_wait();
     // measures total time once all threads have arrived at the barrier
     const auto start = std::chrono::high_resolution_clock::now();
-    barrier.wait();
+    barrier.arrive_and_wait();
     const auto stop = std::chrono::high_resolution_clock::now();
     const auto duration = stop - start;
 
@@ -355,7 +356,7 @@ void bench_bursts(
   // execute benchmark for `runs` iterations
   for (auto run = 0; run < runs; ++run) {
     auto queue = std::make_unique<Q>();
-    boost::barrier barrier{ static_cast<unsigned>(threads + 1) };
+    std::barrier barrier{ static_cast<unsigned>(threads + 1) };
 
     // pre-allocates a vector for storing each thread's join handle
     std::vector<std::thread> thread_handles{};
@@ -369,7 +370,7 @@ void bench_bursts(
         auto&& queue_ref = make_queue_ref(*queue, thread);
 
         // (1) all threads synchronize at this barrier before starting
-        barrier.wait();
+        barrier.arrive_and_wait();
 
         for (auto op = 0; op < ops_per_threads; ++op) {
           queue_ref.enqueue(&thread_ids.at(thread));
@@ -377,7 +378,7 @@ void bench_bursts(
 
         // (2) all threads synchronize at this barrier after completing their
         // respective enqueue burst
-        barrier.wait();
+        barrier.arrive_and_wait();
 
         for (auto op = 0; op < ops_per_threads; ++op) {
           auto elem = queue_ref.dequeue();
@@ -390,20 +391,19 @@ void bench_bursts(
         }
 
         // (3) all threads synchronize at this barrier before completing
-        barrier.wait();
+        barrier.arrive_and_wait();
       }));
     }
 
     // (1)
-    barrier.wait();
-    // measures total time of enqueue burst once all threads have arrived at the
-    // barrier
+    barrier.arrive_and_wait();
+    // measures total time of enqueue burst once all threads have arrived at the barrier
     const auto enq_start = std::chrono::high_resolution_clock::now();
     // (2)
-    barrier.wait();
+    barrier.arrive_and_wait();
     const auto enq_stop = std::chrono::high_resolution_clock::now();
     // (3)
-    barrier.wait();
+    barrier.arrive_and_wait();
     const auto deq_stop = std::chrono::high_resolution_clock::now();
 
     const auto enq = enq_stop - enq_start;
@@ -449,7 +449,7 @@ void bench_reads_or_writes(
   // execute benchmark for `runs` iterations
   for (auto run = 0; run < runs; ++run) {
     auto queue = std::make_unique<Q>();
-    boost::barrier barrier{ static_cast<unsigned>(threads + 1) };
+    std::barrier barrier{ static_cast<unsigned>(threads + 1) };
 
     // pre-allocates a vector for storing each thread's join handle
     std::vector<std::thread> thread_handles{};
@@ -493,7 +493,7 @@ void bench_reads_or_writes(
         };
 
         // all threads synchronize at this barrier before starting
-        barrier.wait();
+        barrier.arrive_and_wait();
 
         switch (bench_type) {
           case bench::bench_type_t::WRITES:
@@ -521,16 +521,16 @@ void bench_reads_or_writes(
         }
 
         // all threads synchronize at this barrier before finishing
-        barrier.wait();
+        barrier.arrive_and_wait();
       }));
     }
 
     // synchronize with threads before starting
-    barrier.wait();
+    barrier.arrive_and_wait();
     // measures total time once all threads have arrived at the barrier
     const auto start = std::chrono::high_resolution_clock::now();
     // synchronize with threads after finishing
-    barrier.wait();
+    barrier.arrive_and_wait();
     const auto stop = std::chrono::high_resolution_clock::now();
     const auto duration = stop - start;
 
