@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(looqueue-benchmarks CXX)
+project(lfqueue-benchmarks CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -19,11 +19,6 @@ endif()
 
 MESSAGE("using allocator: ${ALLOCATOR}")
 
-if (CASCADE_LAKE)
-    MESSAGE("using '-march=cascadelake -mtune=cascadelake' (Cascade Lake CPU)")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=cascadelake -mtune=cascadelake")
-endif()
-
 if(STATIC)
     MESSAGE("using static linking")
 endif()
@@ -31,7 +26,7 @@ endif()
 # looqueue build options
 add_subdirectory(lib/looqueue)
 add_subdirectory(lib/scqueue)
-add_subdirectory(lib/ymcqueue)
+add_subdirectory(lib/ymcq)
 
 find_package(Threads REQUIRED)
 
@@ -44,7 +39,18 @@ target_link_libraries(bench_throughput PRIVATE
         Threads::Threads
         scqueue
         looqueue
-        ymcqueue)
+        ymcq)
+
+# bench dequeue
+add_executable(bench_dequeue
+        src/bench_deque.cpp
+        src/common.cpp)
+target_include_directories(bench_dequeue PRIVATE include)
+target_link_libraries(bench_dequeue PRIVATE
+        Threads::Threads
+        scqueue
+        looqueue
+        ymcq)
 
 if(ALLOCATOR MATCHES "mimalloc")
     target_link_libraries(bench_throughput PRIVATE mimalloc-static)
@@ -60,4 +66,4 @@ target_link_libraries(test_queue PRIVATE
         Threads::Threads
         looqueue
         scqueue
-        ymcqueue)
+        ymcq)
