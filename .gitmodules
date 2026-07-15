@@ -1,10 +1,11 @@
-[submodule "lib/mimalloc"]
-	path = lib/mimalloc
-	url = https://github.com/microsoft/mimalloc.git
 [submodule "lib/looqueue"]
 	path = lib/looqueue
 	url = https://github.com/oliver-giersch/looqueue
 	branch = develop
+[submodule "lib/mimalloc"]
+	path = lib/mimalloc
+	url = https://github.com/microsoft/mimalloc.git
+	branch = main
 [submodule "lib/scqueue"]
 	path = lib/scqueue
 	url = https://github.com/oliver-giersch/scq

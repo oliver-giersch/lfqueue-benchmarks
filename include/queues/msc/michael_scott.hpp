@@ -14,7 +14,7 @@ queue<T>::queue(std::size_t max_threads)
 }
 
 template <typename T>
-queue<T>::~queue<T>() noexcept
+queue<T>::~queue() noexcept
 {
 	auto curr = this->m_head.load(relaxed);
 	while (curr != nullptr) {

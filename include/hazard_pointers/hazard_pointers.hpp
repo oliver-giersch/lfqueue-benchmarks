@@ -23,7 +23,7 @@ hazard_pointers<T>::hazard_pointers(std::size_t num_threads,
 }
 
 template <typename T>
-hazard_pointers<T>::~hazard_pointers<T>() noexcept
+hazard_pointers<T>::~hazard_pointers() noexcept
 {
 	for (auto &thread_block : this->m_thread_blocks) {
 		for (auto retired : thread_block.retired_objects) {
